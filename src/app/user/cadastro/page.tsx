@@ -52,7 +52,7 @@ export default function CadastroAluno() {
 
   return (
     <Container>
-      <div className="min-h-screen bg-linear-to-br from-black/95 to-gray-900 py-8">
+      <div className="min-h-screen bg-linear-to-br py-8">
         <div className="mx-auto max-w-4xl">
           <Card className="border-[#C2A537] bg-black/95 backdrop-blur-sm">
             <CardHeader className="text-center">
@@ -101,6 +101,25 @@ export default function CadastroAluno() {
                     </div>
 
                     <div className="space-y-2">
+                      <Label htmlFor="email" className="text-[#C2A537]">
+                        Email *
+                      </Label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        placeholder="seu@email.com"
+                        required
+                        className="border-[#867536] bg-[#d7ceac] text-black focus:border-[#C2A537]"
+                      />
+                      {getFieldError("email") && (
+                        <FieldError>{getFieldError("email")}</FieldError>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
                       <Label htmlFor="cpf" className="text-[#C2A537]">
                         CPF *
                       </Label>
@@ -114,6 +133,22 @@ export default function CadastroAluno() {
                       />
                       {getFieldError("cpf") && (
                         <FieldError>{getFieldError("cpf")}</FieldError>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="bornDate" className="text-[#C2A537]">
+                        Data de Nascimento *
+                      </Label>
+                      <Input
+                        id="bornDate"
+                        name="bornDate"
+                        type="date"
+                        required
+                        className="border-[#867536] bg-[#d7ceac] text-black focus:border-[#C2A537]"
+                      />
+                      {getFieldError("bornDate") && (
+                        <FieldError>{getFieldError("bornDate")}</FieldError>
                       )}
                     </div>
                   </div>
@@ -166,6 +201,100 @@ export default function CadastroAluno() {
                     {getFieldError("address") && (
                       <FieldError>{getFieldError("address")}</FieldError>
                     )}
+                  </div>
+                </div>
+
+                {/* Dados Financeiros */}
+                <div className="space-y-4">
+                  <h3 className="border-b border-[#C2A537]/30 pb-2 text-lg font-semibold text-[#C2A537]">
+                    Dados Financeiros
+                  </h3>
+
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="monthlyFeeValue"
+                        className="text-[#C2A537]"
+                      >
+                        Valor da Mensalidade (R$) *
+                      </Label>
+                      <Input
+                        id="monthlyFeeValue"
+                        name="monthlyFeeValue"
+                        type="number"
+                        step="0.01"
+                        placeholder="150.00"
+                        min="50"
+                        max="1000"
+                        required
+                        className="border-[#867536] bg-[#d7ceac] text-black focus:border-[#C2A537]"
+                      />
+                      {getFieldError("monthlyFeeValue") && (
+                        <FieldError>
+                          {getFieldError("monthlyFeeValue")}
+                        </FieldError>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="paymentMethod" className="text-[#C2A537]">
+                        Método de Pagamento *
+                      </Label>
+                      <select
+                        id="paymentMethod"
+                        name="paymentMethod"
+                        required
+                        className="ring-offset-background placeholder:text-muted-foreground flex h-10 w-full rounded-md border border-[#867536] bg-[#d7ceac] px-3 py-2 text-sm text-black file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-[#C2A537] focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <option value="">Selecione o método</option>
+                        <option value="dinheiro">Dinheiro</option>
+                        <option value="pix">PIX</option>
+                        <option value="cartao_credito">
+                          Cartão de Crédito
+                        </option>
+                        <option value="cartao_debito">Cartão de Débito</option>
+                        <option value="transferencia">
+                          Transferência Bancária
+                        </option>
+                      </select>
+                      {getFieldError("paymentMethod") && (
+                        <FieldError>
+                          {getFieldError("paymentMethod")}
+                        </FieldError>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="dueDate" className="text-[#C2A537]">
+                        Dia de Vencimento *
+                      </Label>
+                      <select
+                        id="dueDate"
+                        name="dueDate"
+                        required
+                        className="ring-offset-background placeholder:text-muted-foreground flex h-10 w-full rounded-md border border-[#867536] bg-[#d7ceac] px-3 py-2 text-sm text-black file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-[#C2A537] focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <option value="">Selecione o dia</option>
+                        {Array.from({ length: 10 }, (_, i) => i + 1).map(
+                          (day) => (
+                            <option key={day} value={day}>
+                              Dia {day}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                      {getFieldError("dueDate") && (
+                        <FieldError>{getFieldError("dueDate")}</FieldError>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="rounded-md border border-yellow-200 bg-yellow-50 p-3">
+                    <p className="text-sm text-yellow-800">
+                      <strong>Importante:</strong> O vencimento deve ser entre
+                      os dias 1 e 10 do mês. O check-in só será permitido se o
+                      pagamento estiver em dia.
+                    </p>
                   </div>
                 </div>
 

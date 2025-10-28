@@ -4,7 +4,14 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
-import { healthMetricsTable, personalDataTable, usersTable } from "@/db/schema";
+import {
+  financialTable,
+  healthMetricsTable,
+  paymentMethodOptions,
+  personalDataTable,
+  usersTable,
+} from "@/db/schema";
+import { convertToCents, isValidDueDate } from "@/lib/payment-utils";
 import { UserRole } from "@/types/user-roles";
 
 // Schema de validação para o cadastro do aluno
@@ -14,6 +21,7 @@ const cadastroAlunoSchema = z.object({
 
   // Dados pessoais
   cpf: z.string().regex(/^\d{11}$/, "CPF deve ter 11 dígitos"),
+  email: z.string().email("Email deve ter um formato válido"),
   bornDate: z.string().refine((date) => {
     const parsedDate = new Date(date);
     const today = new Date();
@@ -22,6 +30,23 @@ const cadastroAlunoSchema = z.object({
   }, "Idade deve estar entre 16 e 100 anos"),
   address: z.string().min(10, "Endereço deve ter pelo menos 10 caracteres"),
   telephone: z.string().min(10, "Telefone deve ter pelo menos 10 caracteres"),
+
+  // Dados financeiros
+  monthlyFeeValue: z.string().refine((val) => {
+    const num = parseFloat(val);
+    return num >= 50 && num <= 1000;
+  }, "Mensalidade deve estar entre R$ 50,00 e R$ 1.000,00"),
+  paymentMethod: z.enum([
+    "dinheiro",
+    "pix",
+    "cartao_credito",
+    "cartao_debito",
+    "transferencia",
+  ]),
+  dueDate: z.string().refine((val) => {
+    const day = parseInt(val);
+    return isValidDueDate(day);
+  }, "Data de vencimento deve estar entre os dias 1 e 10"),
 
   // Dados de saúde
   heightCm: z.string().refine((val) => {
@@ -73,18 +98,32 @@ export async function createAlunoAction(
     // Validar dados
     const validatedData = cadastroAlunoSchema.parse(processedData);
 
-    // Verificar se CPF já existe
-    const existingUser = await db
+    // Verificar se CPF ou email já existem
+    const existingCPF = await db
       .select()
       .from(personalDataTable)
       .where(eq(personalDataTable.cpf, validatedData.cpf))
       .limit(1);
 
-    if (existingUser.length > 0) {
+    if (existingCPF.length > 0) {
       return {
         success: false,
         message: "CPF já cadastrado no sistema",
         errors: { cpf: ["Este CPF já está em uso"] },
+      };
+    }
+
+    const existingEmail = await db
+      .select()
+      .from(personalDataTable)
+      .where(eq(personalDataTable.email, validatedData.email))
+      .limit(1);
+
+    if (existingEmail.length > 0) {
+      return {
+        success: false,
+        message: "Email já cadastrado no sistema",
+        errors: { email: ["Este email já está em uso"] },
       };
     }
 
@@ -104,12 +143,27 @@ export async function createAlunoAction(
       await tx.insert(personalDataTable).values({
         userId: newUser.id,
         cpf: validatedData.cpf,
+        email: validatedData.email,
         bornDate: validatedData.bornDate,
         address: validatedData.address,
         telephone: validatedData.telephone,
       });
 
-      // 3. Criar métricas de saúde
+      // 3. Criar dados financeiros
+      await tx.insert(financialTable).values({
+        userId: newUser.id,
+        monthlyFeeValueInCents: convertToCents(
+          parseFloat(validatedData.monthlyFeeValue),
+        ),
+        paymentMethod: validatedData.paymentMethod,
+        dueDate: parseInt(validatedData.dueDate),
+        paid: false, // Novo aluno sempre começa com pendência
+        lastPaymentDate: null,
+        updatedAt: new Date().toISOString().split("T")[0],
+        createdAt: new Date().toISOString().split("T")[0],
+      });
+
+      // 4. Criar métricas de saúde
       await tx.insert(healthMetricsTable).values({
         userId: newUser.id,
         heightCm: validatedData.heightCm,

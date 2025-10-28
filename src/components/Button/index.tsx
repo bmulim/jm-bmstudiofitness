@@ -1,6 +1,6 @@
 import clsx from "clsx";
 
-type ButtonVariants = "default" | "ghost" | "danger";
+type ButtonVariants = "default" | "ghost" | "danger" | "outline";
 type ButtonSize = "sm" | "md" | "lg";
 
 type ButtonProps = {
@@ -17,6 +17,7 @@ export function Button({
     default: clsx("bg-[#C0A231] text-black hover:bg-[#E3C453] "),
     ghost: clsx("bg-[#E0D39f] text-[#46443b]"),
     danger: clsx("bg-red-500 text-white hover:bg-red-600"),
+    outline: clsx("border border-current bg-transparent hover:bg-current/10"),
   };
 
   const sizeVariants: Record<ButtonSize, string> = {

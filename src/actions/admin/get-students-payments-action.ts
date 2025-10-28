@@ -1,0 +1,76 @@
+"use server";
+
+import { eq } from "drizzle-orm";
+
+import { db } from "@/db";
+import { financialTable, personalDataTable, usersTable } from "@/db/schema";
+import {
+  formatCurrency,
+  getDaysUntilDue,
+  isPaymentUpToDate,
+} from "@/lib/payment-utils";
+import { UserRole } from "@/types/user-roles";
+
+export interface StudentPaymentData {
+  userId: string;
+  name: string;
+  email: string;
+  cpf: string;
+  monthlyFeeValueInCents: number;
+  paymentMethod: string;
+  dueDate: number;
+  paid: boolean;
+  lastPaymentDate: string | null;
+  isUpToDate: boolean;
+  daysUntilDue: number;
+  formattedValue: string;
+}
+
+export async function getStudentsPaymentsAction(): Promise<
+  StudentPaymentData[]
+> {
+  try {
+    // Buscar todos os alunos com dados financeiros
+    const students = await db
+      .select({
+        userId: usersTable.id,
+        name: usersTable.name,
+        email: personalDataTable.email,
+        cpf: personalDataTable.cpf,
+        monthlyFeeValueInCents: financialTable.monthlyFeeValueInCents,
+        paymentMethod: financialTable.paymentMethod,
+        dueDate: financialTable.dueDate,
+        paid: financialTable.paid,
+        lastPaymentDate: financialTable.lastPaymentDate,
+      })
+      .from(usersTable)
+      .innerJoin(personalDataTable, eq(usersTable.id, personalDataTable.userId))
+      .innerJoin(financialTable, eq(usersTable.id, financialTable.userId))
+      .where(eq(usersTable.userRole, UserRole.ALUNO))
+      .orderBy(usersTable.name);
+
+    // Processar dados com informações adicionais
+    const processedStudents: StudentPaymentData[] = students.map((student) => {
+      const isUpToDate = isPaymentUpToDate(
+        student.dueDate,
+        student.lastPaymentDate,
+        student.paid,
+      );
+
+      const daysUntilDue = getDaysUntilDue(student.dueDate);
+      const formattedValue = formatCurrency(student.monthlyFeeValueInCents);
+
+      return {
+        ...student,
+        isUpToDate,
+        daysUntilDue,
+        formattedValue,
+      };
+    });
+
+    return processedStudents;
+  } catch (error) {
+    console.error("Erro ao buscar dados de pagamento dos alunos:", error);
+    return [];
+  }
+}
