@@ -5,6 +5,7 @@ import {
   integer,
   pgTable,
   text,
+  timestamp,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
@@ -123,11 +124,12 @@ export const checkInTable = pgTable("tb_check_ins", {
   userId: uuid("user_id")
     .notNull()
     .references(() => usersTable.id),
-  checkInDate: date("check_in_date").notNull().defaultNow(),
+  checkInDate: date("check_in_date").notNull(), // Data no formato YYYY-MM-DD
   checkInTime: text("check_in_time").notNull(), // formato HH:MM
+  checkInTimestamp: timestamp("check_in_timestamp").notNull().defaultNow(), // Data e hora exata do check-in
   method: text("method").notNull(), // 'cpf' ou 'email'
   identifier: text("identifier").notNull(), // CPF ou email usado no check-in
-  createdAt: date("created_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const checkInRelations = relations(checkInTable, ({ one }) => ({
@@ -179,3 +181,51 @@ export const paymentMethodOptions = [
   { value: "cartao_debito", label: "Cartão de Débito" },
   { value: "transferencia", label: "Transferência Bancária" },
 ] as const;
+
+// Tabela para tokens de confirmação de usuários
+export const userConfirmationTokensTable = pgTable(
+  "tb_user_confirmation_tokens",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => usersTable.id),
+    token: text("token").notNull().unique(),
+    expiresAt: timestamp("expires_at").notNull(),
+    used: boolean("used").notNull().default(false),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+);
+
+export const userConfirmationTokensRelations = relations(
+  userConfirmationTokensTable,
+  ({ one }) => ({
+    user: one(usersTable, {
+      fields: [userConfirmationTokensTable.userId],
+      references: [usersTable.id],
+    }),
+  }),
+);
+
+// Tabela para histórico de saúde do aluno (atualizações feitas pelo próprio aluno)
+export const studentHealthHistoryTable = pgTable("tb_student_health_history", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => usersTable.id),
+  heightCm: integer("height_cm"),
+  weightKg: text("weight_kg"), // Permite decimais como string
+  notes: text("notes"), // Observações do aluno sobre sua saúde
+  updatedAt: date("updated_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const studentHealthHistoryRelations = relations(
+  studentHealthHistoryTable,
+  ({ one }) => ({
+    user: one(usersTable, {
+      fields: [studentHealthHistoryTable.userId],
+      references: [usersTable.id],
+    }),
+  }),
+);

@@ -9,8 +9,14 @@ import {
   healthMetricsTable,
   paymentMethodOptions,
   personalDataTable,
+  userConfirmationTokensTable,
   usersTable,
 } from "@/db/schema";
+import {
+  generateConfirmationToken,
+  getTokenExpirationDate,
+  sendConfirmationEmail,
+} from "@/lib/email";
 import { convertToCents, isValidDueDate } from "@/lib/payment-utils";
 import { UserRole } from "@/types/user-roles";
 
@@ -128,13 +134,14 @@ export async function createAlunoAction(
     }
 
     // Iniciar transação para criar usuário completo
-    await db.transaction(async (tx) => {
-      // 1. Criar usuário com role de ALUNO
+    const result = await db.transaction(async (tx) => {
+      // 1. Criar usuário com role de ALUNO (sem senha ainda)
       const [newUser] = await tx
         .insert(usersTable)
         .values({
           name: validatedData.name,
           userRole: UserRole.ALUNO,
+          password: null, // Senha será criada na confirmação
           createdAt: new Date().toISOString().split("T")[0],
         })
         .returning({ id: usersTable.id });
@@ -183,11 +190,36 @@ export async function createAlunoAction(
         whatSupplements: validatedData.whatSupplements || null,
         otherNotes: validatedData.otherNotes || null,
       });
+
+      // 5. Criar token de confirmação
+      const confirmationToken = generateConfirmationToken();
+      await tx.insert(userConfirmationTokensTable).values({
+        userId: newUser.id,
+        token: confirmationToken,
+        expiresAt: getTokenExpirationDate(),
+        used: false,
+      });
+
+      return { userId: newUser.id, token: confirmationToken };
     });
+
+    // 6. Enviar e-mail de confirmação (fora da transação)
+    const emailSent = await sendConfirmationEmail(
+      validatedData.email,
+      validatedData.name,
+      result.token,
+    );
+
+    if (!emailSent) {
+      console.warn(
+        "Falha ao enviar e-mail de confirmação, mas usuário foi criado",
+      );
+    }
 
     return {
       success: true,
-      message: "Aluno cadastrado com sucesso! Redirecionando...",
+      message:
+        "Aluno cadastrado com sucesso! Um e-mail de confirmação foi enviado.",
     };
   } catch (error) {
     console.error("Erro ao cadastrar aluno:", error);

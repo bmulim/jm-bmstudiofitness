@@ -22,6 +22,7 @@ export async function loginAction(
 ): Promise<LoginState> {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
+  let userRole: UserRole | null = null;
 
   // Validação básica
   if (!email || !password) {
@@ -69,15 +70,15 @@ export async function loginAction(
       };
     }
 
-    // Verificar se é admin ou professor
+    // Verificar se é admin, professor ou aluno
     if (
       user.userRole !== UserRole.ADMIN &&
-      user.userRole !== UserRole.PROFESSOR
+      user.userRole !== UserRole.PROFESSOR &&
+      user.userRole !== UserRole.ALUNO
     ) {
       return {
         email,
-        error:
-          "Acesso negado: apenas administradores e professores podem fazer login",
+        error: "Tipo de usuário não permitido para login",
       };
     }
 
@@ -87,6 +88,9 @@ export async function loginAction(
       email: personalData.email,
       role: user.userRole,
     });
+
+    // Armazenar role para uso após o try/catch
+    userRole = user.userRole;
 
     // Definir cookie com token
     const cookieStore = await cookies();
@@ -105,6 +109,15 @@ export async function loginAction(
     };
   }
 
-  // Redirecionar para dashboard (fora do try/catch)
-  redirect("/admin/dashboard");
+  // Redirecionar para dashboard apropriado baseado no tipo de usuário
+  if (userRole === UserRole.ADMIN) {
+    redirect("/admin/dashboard");
+  } else if (userRole === UserRole.PROFESSOR) {
+    redirect("/coach");
+  } else if (userRole === UserRole.ALUNO) {
+    redirect("/user/dashboard");
+  } else {
+    // Fallback para admin dashboard
+    redirect("/admin/dashboard");
+  }
 }

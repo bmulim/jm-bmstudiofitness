@@ -3,10 +3,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequestEdge } from "@/lib/auth-edge";
 
 // Rotas protegidas que requerem autenticação
-const protectedPaths = ["/admin", "/coach", "/user/cadastro", "/cadastro"];
+const protectedPaths = [
+  "/admin",
+  "/coach",
+  "/user/cadastro",
+  "/cadastro",
+  "/user/dashboard",
+  "/user/health",
+  "/user/check-ins",
+];
 
 // Rotas públicas dentro das áreas protegidas (não requerem autenticação)
-const publicPaths = ["/admin/login", "/coach/login"];
+const publicPaths = ["/admin/login", "/coach/login", "/user/login"];
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -46,6 +54,16 @@ export async function middleware(request: NextRequest) {
         }
       } else if (pathname === "/coach/login") {
         return NextResponse.redirect(new URL("/coach", request.url));
+      } else if (pathname === "/user/login") {
+        if (user.role === "aluno") {
+          return NextResponse.redirect(new URL("/user/dashboard", request.url));
+        } else if (user.role === "admin") {
+          return NextResponse.redirect(
+            new URL("/admin/dashboard", request.url),
+          );
+        } else if (user.role === "professor") {
+          return NextResponse.redirect(new URL("/coach", request.url));
+        }
       }
     }
     // Se não está logado, permite acesso à página de login
@@ -63,6 +81,13 @@ export async function middleware(request: NextRequest) {
     } else if (pathname.startsWith("/admin")) {
       console.log("🔄 Redirecionando para /admin/login");
       return NextResponse.redirect(new URL("/admin/login", request.url));
+    } else if (
+      pathname.startsWith("/user/dashboard") ||
+      pathname.startsWith("/user/health") ||
+      pathname.startsWith("/user/check-ins")
+    ) {
+      console.log("🔄 Redirecionando para /user/login");
+      return NextResponse.redirect(new URL("/user/login", request.url));
     } else {
       // Para outras rotas protegidas, usa admin login como padrão
       console.log("🔄 Redirecionando para /admin/login (padrão)");
@@ -145,6 +170,32 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Área do aluno - apenas alunos
+  if (
+    (pathname.startsWith("/user/dashboard") ||
+      pathname.startsWith("/user/health") ||
+      pathname.startsWith("/user/check-ins")) &&
+    pathname !== "/user/login"
+  ) {
+    if (user.role !== "aluno") {
+      console.log(
+        "❌ Usuário não é aluno, redirecionando para área apropriada",
+        {
+          userRole: user.role,
+          expectedRole: "aluno",
+        },
+      );
+
+      if (user.role === "admin") {
+        return NextResponse.redirect(new URL("/admin/dashboard", request.url));
+      } else if (user.role === "professor") {
+        return NextResponse.redirect(new URL("/coach", request.url));
+      } else {
+        return NextResponse.redirect(new URL("/unauthorized", request.url));
+      }
+    }
+  }
+
   console.log("✅ Usuário autenticado e autorizado:", {
     role: user.role,
     email: user.email,
@@ -155,5 +206,13 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/coach/:path*", "/user/cadastro", "/cadastro"],
+  matcher: [
+    "/admin/:path*",
+    "/coach/:path*",
+    "/user/cadastro",
+    "/cadastro",
+    "/user/dashboard",
+    "/user/health/:path*",
+    "/user/check-ins/:path*",
+  ],
 };
