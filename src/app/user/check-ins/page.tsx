@@ -66,7 +66,7 @@ export default function StudentCheckInsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-slate-900 to-slate-800 text-white">
+      <div className="min-h-screen text-white">
         <div className="flex min-h-screen items-center justify-center">
           <p className="text-lg text-[#C2A537]">Carregando histórico...</p>
         </div>
@@ -76,7 +76,7 @@ export default function StudentCheckInsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-slate-900 to-slate-800 text-white">
+      <div className="min-h-screen text-white">
         <div className="flex min-h-screen items-center justify-center">
           <Card className="w-full max-w-md border-red-600 bg-red-900/30">
             <CardContent className="p-6 text-center">
@@ -89,7 +89,7 @@ export default function StudentCheckInsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-900 to-slate-800 text-white">
+    <div className="min-h-screen text-white">
       <div className="container mx-auto p-4 lg:p-8">
         {/* Cabeçalho */}
         <Card className="mb-8 border-[#C2A537] bg-black/95">

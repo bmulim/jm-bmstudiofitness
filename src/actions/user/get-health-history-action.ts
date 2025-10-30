@@ -88,13 +88,16 @@ export async function getStudentHealthHistoryAction(): Promise<GetStudentHealthH
       weightKg: entry.weightKg?.toString() || null,
       notes: entry.notes,
       updatedAt: entry.updatedAt, // date field - já é string
-      createdAt: entry.createdAt.toISOString(), // timestamp field - precisa converter
+      createdAt:
+        entry.createdAt instanceof Date
+          ? entry.createdAt.toISOString()
+          : entry.createdAt, // timestamp field - garantir conversão
     }));
 
     const currentHealth: CurrentHealthData | undefined = currentHealthResult
       ? {
-          heightCm: parseInt(currentHealthResult.heightCm),
-          weightKg: parseFloat(currentHealthResult.weightKg),
+          heightCm: parseFloat(currentHealthResult.heightCm) || 0,
+          weightKg: parseFloat(currentHealthResult.weightKg) || 0,
           bloodType: currentHealthResult.bloodType,
           updatedAt: currentHealthResult.updatedAt, // date field - já é string
         }

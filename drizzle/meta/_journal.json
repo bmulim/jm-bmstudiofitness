@@ -36,6 +36,13 @@
       "when": 1761748971226,
       "tag": "0004_chubby_mephisto",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1761786642128,
+      "tag": "0005_friendly_the_fury",
+      "breakpoints": true
     }
   ]
 }
