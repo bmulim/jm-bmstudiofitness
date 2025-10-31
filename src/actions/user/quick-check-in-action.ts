@@ -3,7 +3,7 @@
 import { eq, or } from "drizzle-orm";
 
 import { db } from "@/db";
-import { checkInTable, personalDataTable, usersTable } from "@/db/schema";
+import { checkInTable, financialTable, personalDataTable, usersTable } from "@/db/schema";
 
 interface QuickCheckInState {
   success: boolean;
@@ -59,6 +59,56 @@ export async function quickCheckInAction(
         success: false,
         message: "Check-in rápido disponível apenas para alunos.",
       };
+    }
+
+    // Verificar status de pagamento
+    const [financialData] = await db
+      .select({
+        paid: financialTable.paid,
+        dueDate: financialTable.dueDate,
+        lastPaymentDate: financialTable.lastPaymentDate,
+      })
+      .from(financialTable)
+      .where(eq(financialTable.userId, userResult.userId))
+      .limit(1);
+
+    if (financialData) {
+      const today = new Date();
+      const currentDay = today.getDate();
+      const currentMonth = today.getMonth(); // 0-based
+      const currentYear = today.getFullYear();
+
+      // Verificar se está em atraso
+      let isOverdue = false;
+
+      if (!financialData.paid) {
+        // Se não está pago, verificar se passou da data de vencimento
+        if (currentDay > financialData.dueDate) {
+          isOverdue = true;
+        }
+      } else if (financialData.lastPaymentDate) {
+        // Se está pago, verificar se o pagamento foi feito no mês atual
+        const lastPayment = new Date(financialData.lastPaymentDate);
+        const lastPaymentMonth = lastPayment.getMonth();
+        const lastPaymentYear = lastPayment.getFullYear();
+
+        // Se o último pagamento não foi neste mês/ano e já passou do vencimento
+        if (
+          (lastPaymentYear < currentYear || 
+           (lastPaymentYear === currentYear && lastPaymentMonth < currentMonth)) &&
+          currentDay > financialData.dueDate
+        ) {
+          isOverdue = true;
+        }
+      }
+
+      if (isOverdue) {
+        return {
+          success: false,
+          message: `${userResult.userName}, você está com pagamento em atraso. Regularize sua situação na recepção para fazer check-in.`,
+          userName: userResult.userName,
+        };
+      }
     }
 
     // Verificar se já fez check-in hoje
