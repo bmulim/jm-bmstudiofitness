@@ -22,6 +22,7 @@ export const metadata: Metadata = {
   title: "JM - Studio Fitness",
   description:
     "Transforme sua vida no JM Studio Fitness. Ambiente acolhedor e profissional dedicado à sua saúde, bem-estar e conquista dos seus objetivos fitness. Venha fazer parte da nossa família fitness!",
+  viewport: "width=device-width, initial-scale=1",
 };
 
 export default function RootLayout({
