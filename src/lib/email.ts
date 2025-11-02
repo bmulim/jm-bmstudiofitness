@@ -18,8 +18,8 @@ interface EmailData {
 function getEmailConfig(): EmailConfig {
   return {
     provider: process.env.EMAIL_PROVIDER || "development",
-    from: process.env.EMAIL_FROM || "noreply@bmstudiofitness.com",
-    fromName: process.env.EMAIL_FROM_NAME || "BM Studio Fitness",
+    from: process.env.EMAIL_FROM || "noreply@jmfitnesstudio.com",
+    fromName: process.env.EMAIL_FROM_NAME || "JM Fitness Studio",
   };
 }
 
@@ -34,11 +34,11 @@ function generateConfirmationEmailTemplate(
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Confirme sua conta - BM Studio Fitness</title>
+      <title>Confirme sua conta - JM Fitness Studio</title>
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px;">
-        <h1 style="color: #C2A537; margin: 0; font-size: 28px;">🏋️ BM Studio Fitness</h1>
+        <h1 style="color: #C2A537; margin: 0; font-size: 28px;">🏋️ JM Fitness Studio</h1>
         <p style="color: #ffffff; margin: 10px 0 0 0; font-size: 16px;">Bem-vindo(a) ao nosso time!</p>
       </div>
       
@@ -71,7 +71,7 @@ function generateConfirmationEmailTemplate(
       
       <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
         <p style="color: #666; font-size: 12px; margin: 0;">
-          Este e-mail foi enviado automaticamente. Se você não se cadastrou na BM Studio Fitness, pode ignorar esta mensagem.
+          Este e-mail foi enviado automaticamente. Se você não se cadastrou na JM Fitness Studio, pode ignorar esta mensagem.
         </p>
       </div>
     </body>
@@ -79,7 +79,7 @@ function generateConfirmationEmailTemplate(
   `;
 
   const text = `
-    BM Studio Fitness - Confirme sua conta
+    JM Fitness Studio - Confirme sua conta
     
     Olá, ${name}!
     
@@ -96,10 +96,10 @@ function generateConfirmationEmailTemplate(
     - Poderá fazer check-ins na academia
     - Acompanhará seu histórico de treinos
     
-    Se você não se cadastrou na BM Studio Fitness, pode ignorar esta mensagem.
+    Se você não se cadastrou na JM Fitness Studio, pode ignorar esta mensagem.
     
     --
-    BM Studio Fitness
+    JM Fitness Studio
   `;
 
   return { html, text };
@@ -224,7 +224,7 @@ export async function sendConfirmationEmail(
 
     const emailData: EmailData = {
       to: email,
-      subject: "Bem-vindo(a) ao BM Studio Fitness - Confirme sua conta",
+      subject: "Bem-vindo(a) ao JM Fitness Studio - Confirme sua conta",
       html: emailTemplate.html,
       text: emailTemplate.text,
     };

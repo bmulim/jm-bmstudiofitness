@@ -1,4 +1,4 @@
-# 📧 Configuração de E-mail - BM Studio Fitness
+# 📧 Configuração de E-mail - JM Fitness Studio
 
 Este guia mostra como configurar o envio de e-mails no sistema, com diferentes provedores de e-mail.
 
@@ -32,7 +32,7 @@ Este guia mostra como configurar o envio de e-mails no sistema, com diferentes p
    EMAIL_PROVIDER="resend"
    RESEND_API_KEY="re_123456789_sua_api_key_aqui"
    EMAIL_FROM="noreply@seudominio.com"  # ou "onboarding@resend.dev"
-   EMAIL_FROM_NAME="BM Studio Fitness"
+   EMAIL_FROM_NAME="JM Fitness Studio"
    ```
 
 **Preços:** 3.000 e-mails/mês grátis, depois $20/mês para 50k e-mails.
@@ -58,7 +58,7 @@ Este guia mostra como configurar o envio de e-mails no sistema, com diferentes p
    SMTP_USER="seu-email@gmail.com"
    SMTP_PASS="sua-senha-de-app-16-digitos"
    EMAIL_FROM="seu-email@gmail.com"
-   EMAIL_FROM_NAME="BM Studio Fitness"
+   EMAIL_FROM_NAME="JM Fitness Studio"
    ```
 
 4. **Instale dependência:**
@@ -83,7 +83,7 @@ Este guia mostra como configurar o envio de e-mails no sistema, com diferentes p
    EMAIL_PROVIDER="sendgrid"
    SENDGRID_API_KEY="SG.123456789_sua_api_key_aqui"
    EMAIL_FROM="noreply@seudominio.com"
-   EMAIL_FROM_NAME="BM Studio Fitness"
+   EMAIL_FROM_NAME="JM Fitness Studio"
    ```
 
 **Preços:** 100 e-mails/dia grátis, depois $19.95/mês para 50k e-mails.
@@ -116,7 +116,7 @@ NEXT_PUBLIC_BASE_URL="http://localhost:3000"  # ou seu domínio
 EMAIL_PROVIDER="resend"
 RESEND_API_KEY="re_sua_api_key"
 EMAIL_FROM="noreply@seudominio.com"
-EMAIL_FROM_NAME="BM Studio Fitness"
+EMAIL_FROM_NAME="JM Fitness Studio"
 
 # OU GMAIL
 # EMAIL_PROVIDER="smtp"

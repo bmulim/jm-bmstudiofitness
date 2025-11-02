@@ -1,8 +1,9 @@
-# Sistema Financeiro - JM Studio Fitness
+# Sistema Financeiro - JM Fitness Studio
 
 ## 🎯 Funcionalidades Implementadas
 
 ### 💳 **Controle de Pagamentos**
+
 - ✅ **Campo de mensalidade** no cadastro de alunos
 - ✅ **Método de pagamento** (dinheiro, PIX, cartão, transferência)
 - ✅ **Data de vencimento** limitada entre dias 1-10 do mês
@@ -12,6 +13,7 @@
 ### 🗄️ **Estrutura do Banco de Dados**
 
 #### Tabela `financialTable`
+
 ```sql
 tb_financial (
   id UUID PRIMARY KEY,
@@ -27,17 +29,18 @@ tb_financial (
 ```
 
 #### Métodos de Pagamento Disponíveis
+
 - **dinheiro** - Pagamento em espécie
 - **pix** - Transferência instantânea
 - **cartao_credito** - Cartão de crédito
-- **cartao_debito** - Cartão de débito  
+- **cartao_debito** - Cartão de débito
 - **transferencia** - Transferência bancária
 
 ### 📋 **Formulário de Cadastro Atualizado**
 
 Novos campos adicionados na seção "Dados Financeiros":
 
-1. **Valor da Mensalidade** 
+1. **Valor da Mensalidade**
    - Input numérico com decimais
    - Validação: R$ 50,00 - R$ 1.000,00
    - Armazenado em centavos no banco
@@ -53,22 +56,24 @@ Novos campos adicionados na seção "Dados Financeiros":
 ### 🔒 **Sistema de Verificação de Check-in**
 
 #### Validações Implementadas
+
 ```typescript
 // Verificação automática durante check-in
 const paymentUpToDate = isPaymentUpToDate(
-  user.dueDate,           // Dia do vencimento
-  user.lastPaymentDate,   // Data do último pagamento
-  user.paid              // Status atual
+  user.dueDate, // Dia do vencimento
+  user.lastPaymentDate, // Data do último pagamento
+  user.paid, // Status atual
 );
 
 if (!paymentUpToDate) {
-  return "Pagamento em atraso. Procure a recepção."
+  return "Pagamento em atraso. Procure a recepção.";
 }
 ```
 
 #### Lógica de Verificação
+
 1. **Se marcado como pago** E **último pagamento foi neste mês** → ✅ Liberado
-2. **Se não pagou ainda** E **não passou do dia de vencimento** → ✅ Liberado  
+2. **Se não pagou ainda** E **não passou do dia de vencimento** → ✅ Liberado
 3. **Se passou do dia de vencimento** E **não pagou** → ❌ Bloqueado
 4. **Se último pagamento foi mês anterior** → ❌ Bloqueado
 
@@ -77,6 +82,7 @@ if (!paymentUpToDate) {
 #### Rota: `/admin/pagamentos`
 
 Funcionalidades do painel:
+
 - **Listagem completa** de todos os alunos
 - **Separação visual** entre pagamentos em dia e em atraso
 - **Estatísticas em tempo real**
@@ -84,6 +90,7 @@ Funcionalidades do painel:
 - **Informações detalhadas** por aluno
 
 #### Dados Exibidos
+
 - Nome, email e CPF do aluno
 - Valor da mensalidade formatado
 - Método de pagamento
@@ -92,6 +99,7 @@ Funcionalidades do painel:
 - Status atual (em dia/atrasado)
 
 #### Ações Disponíveis
+
 - ✅ **Confirmar Pagamento** - Marca como pago e registra data
 - ❌ **Marcar como Pendente** - Remove status de pago
 
@@ -108,32 +116,38 @@ Funcionalidades do painel:
 ### 📊 **Actions Criadas**
 
 #### Cadastro de Aluno
+
 - **`create-aluno-action.ts`** atualizado para incluir dados financeiros
 - Validação de valores entre R$ 50-1000
 - Criação automática do registro financeiro
 
 #### Verificação de Check-in
+
 - **`checkin-action.ts`** atualizado para verificar pagamento
 - Consulta join com tabela financeira
 - Bloqueio automático para inadimplentes
 
 #### Gestão Administrativa
+
 - **`get-students-payments-action.ts`** - Lista alunos com status financeiro
 - **`update-payment-action.ts`** - Atualiza status de pagamento
 
 ### 🎨 **Interface de Usuário**
 
 #### Página de Check-in
+
 - ✅ **Aviso sobre pagamentos** na área informativa
 - ✅ **Mensagem específica** para inadimplentes
 - ✅ **Orientação visual** sobre necessidade de pagamento em dia
 
 #### Página de Cadastro
+
 - ✅ **Seção "Dados Financeiros"** bem estruturada
 - ✅ **Validação em tempo real** dos campos
 - ✅ **Aviso informativo** sobre regras de vencimento
 
 #### Painel Admin
+
 - ✅ **Design responsivo** e intuitivo
 - ✅ **Cores diferenciadas** para status (verde/vermelho)
 - ✅ **Estatísticas visuais** em cards
@@ -142,16 +156,19 @@ Funcionalidades do painel:
 ### ⚠️ **Regras de Negócio**
 
 #### Vencimentos
+
 - **Limite:** Apenas dias 1-10 do mês
 - **Justificativa:** Facilita controle financeiro e fluxo de caixa
 - **Flexibilidade:** Aluno escolhe o dia dentro do limite
 
 #### Pagamentos
+
 - **Novo aluno:** Sempre inicia com status "pendente"
 - **Check-in:** Bloqueado automaticamente se em atraso
 - **Tolerância:** Até o dia do vencimento é considerado "em dia"
 
 #### Valores
+
 - **Mínimo:** R$ 50,00 (adequado para planos básicos)
 - **Máximo:** R$ 1.000,00 (cobrir planos premium)
 - **Armazenamento:** Em centavos para evitar problemas de precisão

@@ -247,7 +247,7 @@ export default function SectionFeatured() {
   /* 
 
         <div className="flex flex-col justify-center gap-4 text-center bg-bl">
-          <h1>Bem-vindo ao JM Studio Fitness</h1>
+          <h1>Bem-vindo ao JM Fitness Studio</h1>
           <p className="text-justify">
             Lorem ipsum dolor sit amet consectetur adipisicing elit. Repudiandae
             perferendis magnam dignissimos totam exercitationem non voluptatum

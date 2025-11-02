@@ -13,7 +13,7 @@ export function CoachHeader() {
           <GraduationCap className="h-8 w-8 text-[#C2A537]" />
           <div>
             <h1 className="text-xl font-bold text-[#C2A537]">
-              JM Studio Fitness
+              JM Fitness Studio
             </h1>
             <p className="text-sm text-slate-400">Área do Coach</p>
           </div>

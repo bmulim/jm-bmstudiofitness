@@ -31,9 +31,9 @@
 ### 📧 **Exemplo do E-mail que será Enviado**
 
 ```
-De: BM Studio Fitness <noreply@bmstudiofitness.com>
+De: JM Fitness Studio <noreply@jmfitnesstudio.com>
 Para: seu-email@gmail.com
-Assunto: Bem-vindo(a) ao BM Studio Fitness - Confirme sua conta
+Assunto: Bem-vindo(a) ao JM Fitness Studio - Confirme sua conta
 
 [E-mail em HTML com design responsivo]
 - Logo da academia

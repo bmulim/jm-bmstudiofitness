@@ -59,7 +59,7 @@ export function Header() {
           >
             <Image
               src={banner}
-              alt="Logo JM Studio Fitness"
+              alt="Logo JM Fitness Studio"
               width={120}
               height={300}
               priority

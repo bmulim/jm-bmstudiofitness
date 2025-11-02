@@ -19,7 +19,7 @@ async function updateUserEmails() {
 
     // Atualizar cada usuário com um email único baseado no CPF
     for (const user of usersWithTempEmail) {
-      const newEmail = `user-${user.cpf}@bmstudiofitness.com`;
+      const newEmail = `user-${user.cpf}@jmfitnesstudio.com`;
 
       await db
         .update(personalDataTable)

@@ -111,7 +111,7 @@ export default function StudentDashboard() {
                   🏋️ Bem-vindo, {studentData.user.name}!
                 </CardTitle>
                 <CardDescription className="text-lg text-slate-300">
-                  Sua área pessoal do BM Studio Fitness
+                  Sua área pessoal do JM Fitness Studio
                 </CardDescription>
               </div>
 

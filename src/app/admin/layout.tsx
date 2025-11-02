@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "JM - Studio Fitness",
+  title: "JM Fitness Studio",
   description:
-    "Transforme sua vida no JM Studio Fitness. Ambiente acolhedor e profissional dedicado à sua saúde, bem-estar e conquista dos seus objetivos fitness. Venha fazer parte da nossa família fitness!",
+    "Transforme sua vida no JM Fitness Studio. Ambiente acolhedor e profissional dedicado à sua saúde, bem-estar e conquista dos seus objetivos fitness. Venha fazer parte da nossa família fitness!",
 };
 
 export default function AdminLayout({

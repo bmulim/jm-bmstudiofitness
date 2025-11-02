@@ -57,7 +57,7 @@ export default function SectionHistory() {
                 <span className="font-semibold text-[#C2A537]">
                   Fundada em 2010
                 </span>
-                , a JM Studio Fitness nasceu do sonho de proporcionar um espaço
+                , a JM Fitness Studio nasceu do sonho de proporcionar um espaço
                 onde{" "}
                 <span className="font-medium text-white">
                   saúde, bem-estar e comunidade
@@ -195,7 +195,7 @@ export default function SectionHistory() {
               >
                 <Image
                   src="/banner-01.png"
-                  alt="Interior moderno da JM Studio Fitness"
+                  alt="Interior moderno da JM Fitness Studio"
                   width={600}
                   height={400}
                   className="h-auto w-full object-cover transition-transform duration-700 group-hover:scale-110"

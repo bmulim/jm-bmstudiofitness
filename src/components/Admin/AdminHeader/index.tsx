@@ -20,7 +20,7 @@ export function AdminHeader() {
       <Link href="/">
         <Image
           src={banner}
-          alt="Logo JM Studio Fitness"
+          alt="Logo JM Fitness Studio"
           width={150}
           height={400}
           priority

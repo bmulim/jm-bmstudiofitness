@@ -83,7 +83,7 @@ export default function ConfirmUserPage() {
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle className="text-center text-2xl font-bold text-[#C2A537]">
-              🏋️ BM Studio Fitness
+              🏋️ JM Fitness Studio
             </CardTitle>
             <CardDescription className="text-center">
               Confirme seus dados e crie sua senha
