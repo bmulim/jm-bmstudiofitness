@@ -1,7 +1,8 @@
 "use client";
 
-import { GraduationCap, Loader2, Users } from "lucide-react";
-import { useActionState } from "react";
+import { motion } from "framer-motion";
+import { Eye, EyeOff, GraduationCap, Loader2 } from "lucide-react";
+import { useActionState, useState } from "react";
 
 import { coachLoginAction } from "@/actions/auth/coach-login-action";
 import { Button } from "@/components/ui/button";
@@ -21,115 +22,197 @@ const CoachLogin = () => {
     coachLoginAction,
     initialState,
   );
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="bg-[#1b1b1a] text-[#C0A231]">
-      {/* Main Content */}
-      <div className="mx-auto max-w-5xl px-8">
-        <div className="flex min-h-[calc(100vh-240px)] items-center justify-center py-2">
-          <Card className="w-[400px] max-w-md border-[#C2A537] bg-black/95 backdrop-blur-sm md:max-w-lg lg:max-w-xl">
-            <CardHeader className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#C2A537]/10">
-                <GraduationCap className="h-8 w-8 text-[#C2A537]" />
-              </div>
-              <CardTitle className="text-xl text-[#C2A537] md:text-2xl">
-                Login do Coach
-              </CardTitle>
-              <CardDescription className="text-slate-400">
-                Acesse sua área exclusiva para acompanhar seus alunos
-              </CardDescription>
-            </CardHeader>
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+      className="bg-gradient-to-br from-[#1b1b1a] via-black to-[#1b1b1a] py-20 text-white"
+    >
+      {/* Background decorativo */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/50"></div>
 
-            <CardContent>
-              <form action={action} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-slate-300">
-                    Email
-                  </Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="seu.email@bmstudio.com"
-                    defaultValue={state.email}
-                    required
-                    className="border-[#C2A537]/30 bg-slate-900/50 text-slate-200 placeholder:text-slate-500 focus:border-[#C2A537] focus:ring-[#C2A537]"
-                  />
-                </div>
+      <div className="relative z-10 flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+          className="w-full max-w-md"
+        >
+          <div className="perspective-1000 relative">
+            {/* Background decorativo para o card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1, delay: 0.4 }}
+              className="absolute -inset-4 animate-pulse rounded-3xl bg-gradient-to-r from-[#C2A537]/20 via-[#C2A537]/10 to-[#C2A537]/20 blur-xl"
+            ></motion.div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-slate-300">
-                    Senha
-                  </Label>
-                  <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    placeholder="Digite sua senha"
-                    required
-                    className="border-[#C2A537]/30 bg-slate-900/50 text-slate-200 placeholder:text-slate-500 focus:border-[#C2A537] focus:ring-[#C2A537]"
-                  />
-                </div>
-
-                {state.error && (
-                  <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3">
-                    <p className="text-sm text-red-400">{state.error}</p>
-                  </div>
-                )}
-
-                <Button
-                  type="submit"
-                  disabled={isPending}
-                  className="w-full bg-[#C2A537] text-black hover:bg-[#D4B547] disabled:opacity-50"
-                >
-                  {isPending ? (
-                    <>
-                      <Loader2 size={16} className="mr-2 animate-spin" />
-                      Entrando...
-                    </>
-                  ) : (
-                    <>
-                      <GraduationCap size={16} className="mr-2" />
-                      Entrar como Professor
-                    </>
-                  )}
-                </Button>
-              </form>
-
-              <div className="mt-6 space-y-4">
-                <div className="text-center text-xs text-slate-400">
-                  <p>Acesso exclusivo para professores credenciados</p>
-                  <p className="mt-1">
-                    Apenas dados de saúde dos alunos serão exibidos
-                  </p>
-                </div>
-
-                <div className="rounded-lg border border-[#C2A537]/30 bg-[#C2A537]/5 p-3">
-                  <h4 className="mb-2 text-sm font-medium text-[#C2A537]">
-                    O que você pode fazer:
-                  </h4>
-                  <ul className="space-y-1 text-xs text-slate-400">
-                    <li>• Pesquisar alunos por nome, CPF ou email</li>
-                    <li>• Visualizar dados de saúde e histórico médico</li>
-                    <li>• Adicionar observações gerais e particulares</li>
-                    <li>• Acompanhar histórico de observações</li>
-                  </ul>
-                </div>
-
-                <div className="text-center">
-                  <a
-                    href="/admin/login"
-                    className="text-xs text-slate-400 transition-colors hover:text-[#C2A537]"
+            <motion.div
+              initial={{ rotateX: 15, rotateY: -15, z: -100 }}
+              animate={{ rotateX: 0, rotateY: 0, z: 0 }}
+              whileHover={{
+                rotateX: -5,
+                rotateY: 5,
+                z: 50,
+                transition: { duration: 0.3 },
+              }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              style={{ transformStyle: "preserve-3d" }}
+              className="transform-gpu"
+            >
+              <Card className="hover:shadow-3xl relative border-2 border-[#C2A537]/50 bg-black/95 shadow-2xl shadow-[#C2A537]/20 backdrop-blur-lg transition-all duration-300 hover:shadow-[#C2A537]/30">
+                <CardHeader>
+                  <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.6 }}
                   >
-                    Não é professor? Acesse o login administrativo
-                  </a>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                    <CardTitle className="flex items-center justify-center gap-3 bg-gradient-to-r from-[#FFD700] via-[#C2A537] to-[#B8941F] bg-clip-text text-xl font-bold text-transparent md:text-2xl">
+                      <motion.div
+                        whileHover={{ rotate: 360, scale: 1.1 }}
+                        transition={{ duration: 0.5 }}
+                      >
+                        <GraduationCap className="h-6 w-6 text-[#C2A537]" />
+                      </motion.div>
+                      Login do Professor
+                    </CardTitle>
+                    <CardDescription className="text-center text-sm text-slate-300 md:text-base">
+                      Acesse sua área exclusiva para acompanhar seus alunos
+                    </CardDescription>
+                  </motion.div>
+                </CardHeader>
+                <CardContent>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.8 }}
+                  >
+                    {state.error && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.4 }}
+                        className="mb-4 rounded-lg border border-red-500/50 bg-red-900/20 p-3 text-sm text-red-300 backdrop-blur-sm"
+                      >
+                        {state.error}
+                      </motion.div>
+                    )}
+
+                    <form action={action} className="space-y-6">
+                      <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.6, delay: 1 }}
+                        className="grid gap-3"
+                      >
+                        <Label
+                          htmlFor="email"
+                          className="font-medium text-[#C2A537]"
+                        >
+                          Email
+                        </Label>
+                        <Input
+                          id="email"
+                          name="email"
+                          type="email"
+                          placeholder="seu.email@bmstudio.com"
+                          required
+                          disabled={isPending}
+                          defaultValue={state.email}
+                          className="border-[#C2A537]/30 bg-slate-900/50 text-white transition-all duration-300 placeholder:text-slate-500 focus:border-[#C2A537] focus:ring-[#C2A537]/20"
+                        />
+                      </motion.div>
+
+                      <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.6, delay: 1.2 }}
+                        className="grid gap-3"
+                      >
+                        <Label
+                          htmlFor="password"
+                          className="font-medium text-[#C2A537]"
+                        >
+                          Senha
+                        </Label>
+                        <div className="relative">
+                          <Input
+                            id="password"
+                            name="password"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="sua senha"
+                            required
+                            disabled={isPending}
+                            className="border-[#C2A537]/30 bg-slate-900/50 pr-12 text-white transition-all duration-300 placeholder:text-slate-500 focus:border-[#C2A537] focus:ring-[#C2A537]/20"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute top-0 right-0 h-full px-3 py-2 transition-colors duration-300 hover:bg-[#C2A537]/10"
+                            onClick={() => setShowPassword(!showPassword)}
+                            disabled={isPending}
+                          >
+                            <motion.div
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4 text-slate-400" />
+                              ) : (
+                                <Eye className="h-4 w-4 text-slate-400" />
+                              )}
+                            </motion.div>
+                          </Button>
+                        </div>
+                      </motion.div>
+
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 1.4 }}
+                      >
+                        <Button
+                          type="submit"
+                          disabled={isPending}
+                          className="w-full transform bg-gradient-to-r from-[#C2A537] to-[#D4B547] font-semibold text-black transition-all duration-700 hover:scale-[1.02] hover:from-[#D4B547] hover:to-[#E6C658] hover:shadow-xl hover:shadow-[#C2A537]/30 active:scale-[0.98]"
+                        >
+                          {isPending ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Entrando...
+                            </>
+                          ) : (
+                            <>
+                              <GraduationCap className="mr-2 h-4 w-4" />
+                              Entrar como Professor
+                            </>
+                          )}
+                        </Button>
+                      </motion.div>
+
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.6, delay: 1.6 }}
+                        className="text-center"
+                      >
+                        <p className="text-sm text-slate-400">
+                          Acesso exclusivo para professores credenciados
+                        </p>
+                      </motion.div>
+                    </form>
+                  </motion.div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

@@ -1,7 +1,8 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
-import { useActionState } from "react";
+import { motion } from "framer-motion";
+import { Eye, EyeOff,Loader2, Shield } from "lucide-react";
+import { useActionState, useState } from "react";
 
 import { loginAction } from "@/actions/auth/login-action";
 import { Button } from "@/components/ui/button";
@@ -18,79 +19,197 @@ import { Label } from "@/components/ui/label";
 const AdminLogin = () => {
   const initialState = { email: "", error: "" };
   const [state, action, isPending] = useActionState(loginAction, initialState);
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="text-[#C0A231]">
-      <div className="mx-auto max-w-5xl px-8">
-        <div className="flex min-h-[calc(100vh-240px)] items-center justify-center py-2">
-          <Card className="w-[350px] max-w-md border-[#C2A537] bg-black/95 backdrop-blur-sm md:max-w-lg lg:max-w-xl">
-            <CardHeader>
-              <CardTitle className="text-center text-lg text-[#C2A537] md:text-xl">
-                Login Administrativo
-              </CardTitle>
-              <CardDescription className="text-center text-xs text-slate-300 md:text-sm">
-                Digite suas credenciais para acessar o painel administrativo
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form action={action} className="grid gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="email" className="text-[#C2A537]">
-                    Email
-                  </Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="admin@bmstudio.com"
-                    required
-                    disabled={isPending}
-                    defaultValue={state.email}
-                    className="border-gray-600 bg-gray-900/50 text-white placeholder:text-gray-400 focus:border-[#C2A537]"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="password" className="text-[#C2A537]">
-                    Senha
-                  </Label>
-                  <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    placeholder="Digite sua senha"
-                    required
-                    disabled={isPending}
-                    className="border-gray-600 bg-gray-900/50 text-white placeholder:text-gray-400 focus:border-[#C2A537]"
-                  />
-                </div>
-                {state.error && (
-                  <div className="rounded border border-red-800 bg-red-900/20 p-3 text-sm text-red-400">
-                    {state.error}
-                  </div>
-                )}
-                <Button
-                  type="submit"
-                  className="w-full bg-[#C2A537] text-black hover:bg-[#D4B547] disabled:opacity-50"
-                  disabled={isPending}
-                >
-                  {isPending ? (
-                    <>
-                      <Loader2 size={16} className="mr-2 animate-spin" />
-                      Entrando...
-                    </>
-                  ) : (
-                    "Entrar"
-                  )}
-                </Button>
-              </form>
-              <div className="mt-6 text-center text-xs text-slate-400">
-                <p>Apenas administradores e professores têm acesso</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+      className="bg-gradient-to-br from-[#1b1b1a] via-black to-[#1b1b1a] py-20 text-white"
+    >
+      {/* Background decorativo */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/50"></div>
+
+      <div className="relative z-10 flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+          className="w-full max-w-md"
+        >
+          <div className="perspective-1000 relative">
+            {/* Background decorativo para o card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1, delay: 0.4 }}
+              className="absolute -inset-4 animate-pulse rounded-3xl bg-gradient-to-r from-[#C2A537]/20 via-[#C2A537]/10 to-[#C2A537]/20 blur-xl"
+            ></motion.div>
+
+            <motion.div
+              initial={{ rotateX: 15, rotateY: -15, z: -100 }}
+              animate={{ rotateX: 0, rotateY: 0, z: 0 }}
+              whileHover={{
+                rotateX: -5,
+                rotateY: 5,
+                z: 50,
+                transition: { duration: 0.3 },
+              }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              style={{ transformStyle: "preserve-3d" }}
+              className="transform-gpu"
+            >
+              <Card className="hover:shadow-3xl relative border-2 border-[#C2A537]/50 bg-black/95 shadow-2xl shadow-[#C2A537]/20 backdrop-blur-lg transition-all duration-300 hover:shadow-[#C2A537]/30">
+                <CardHeader>
+                  <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.6 }}
+                  >
+                    <CardTitle className="flex items-center justify-center gap-3 bg-gradient-to-r from-[#FFD700] via-[#C2A537] to-[#B8941F] bg-clip-text text-xl font-bold text-transparent md:text-2xl">
+                      <motion.div
+                        whileHover={{ rotate: 360, scale: 1.1 }}
+                        transition={{ duration: 0.5 }}
+                      >
+                        <Shield className="h-6 w-6 text-[#C2A537]" />
+                      </motion.div>
+                      Painel Administrativo
+                    </CardTitle>
+                    <CardDescription className="text-center text-sm text-slate-300 md:text-base">
+                      Digite suas credenciais para acessar o sistema
+                    </CardDescription>
+                  </motion.div>
+                </CardHeader>
+                <CardContent>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.8 }}
+                  >
+                    {state.error && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.4 }}
+                        className="mb-4 rounded-lg border border-red-500/50 bg-red-900/20 p-3 text-sm text-red-300 backdrop-blur-sm"
+                      >
+                        {state.error}
+                      </motion.div>
+                    )}
+
+                    <form action={action} className="space-y-6">
+                      <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.6, delay: 1 }}
+                        className="grid gap-3"
+                      >
+                        <Label
+                          htmlFor="email"
+                          className="font-medium text-[#C2A537]"
+                        >
+                          Email
+                        </Label>
+                        <Input
+                          id="email"
+                          name="email"
+                          type="email"
+                          placeholder="admin@bmstudio.com"
+                          required
+                          disabled={isPending}
+                          defaultValue={state.email}
+                          className="border-[#C2A537]/30 bg-slate-900/50 text-white transition-all duration-300 placeholder:text-slate-500 focus:border-[#C2A537] focus:ring-[#C2A537]/20"
+                        />
+                      </motion.div>
+
+                      <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.6, delay: 1.2 }}
+                        className="grid gap-3"
+                      >
+                        <Label
+                          htmlFor="password"
+                          className="font-medium text-[#C2A537]"
+                        >
+                          Senha
+                        </Label>
+                        <div className="relative">
+                          <Input
+                            id="password"
+                            name="password"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="sua senha"
+                            required
+                            disabled={isPending}
+                            className="border-[#C2A537]/30 bg-slate-900/50 pr-12 text-white transition-all duration-300 placeholder:text-slate-500 focus:border-[#C2A537] focus:ring-[#C2A537]/20"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute top-0 right-0 h-full px-3 py-2 transition-colors duration-300 hover:bg-[#C2A537]/10"
+                            onClick={() => setShowPassword(!showPassword)}
+                            disabled={isPending}
+                          >
+                            <motion.div
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4 text-slate-400" />
+                              ) : (
+                                <Eye className="h-4 w-4 text-slate-400" />
+                              )}
+                            </motion.div>
+                          </Button>
+                        </div>
+                      </motion.div>
+
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 1.4 }}
+                      >
+                        <Button
+                          type="submit"
+                          disabled={isPending}
+                          className="w-full transform bg-gradient-to-r from-[#C2A537] to-[#D4B547] font-semibold text-black transition-all duration-700 hover:scale-[1.02] hover:from-[#D4B547] hover:to-[#E6C658] hover:shadow-xl hover:shadow-[#C2A537]/30 active:scale-[0.98]"
+                        >
+                          {isPending ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Entrando...
+                            </>
+                          ) : (
+                            <>
+                              <Shield className="mr-2 h-4 w-4" />
+                              Acessar Painel
+                            </>
+                          )}
+                        </Button>
+                      </motion.div>
+
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.6, delay: 1.6 }}
+                        className="text-center"
+                      >
+                        <p className="text-sm text-slate-400">
+                          Acesso restrito a administradores
+                        </p>
+                      </motion.div>
+                    </form>
+                  </motion.div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

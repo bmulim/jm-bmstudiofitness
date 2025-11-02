@@ -48,6 +48,14 @@ const config: Config = {
           "100%": { transform: "scale(1)", opacity: "1" },
         },
       },
+      perspective: {
+        "1000": "1000px",
+        "1500": "1500px",
+      },
+      boxShadow: {
+        "3xl":
+          "0 35px 60px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1)",
+      },
     },
   },
   plugins: [tailwindcssAnimate],
