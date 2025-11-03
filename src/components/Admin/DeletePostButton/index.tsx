@@ -1,16 +1,23 @@
 "use client";
 
-import { deletePostAction } from "@/actions/post/delete-post-action";
-import Dialog from "@/components/Dialog";
-import clsx from "clsx";
-import { Trash2Icon } from "lucide-react";
-import { useState, useTransition } from "react";
-import { toast } from "react-toastify";
+// COMPONENTE TEMPORARIAMENTE DESABILITADO - FUNCIONALIDADE DE POSTS NÃO IMPLEMENTADA
 
 type DeletePostButtonProps = {
   id: string;
   title: string;
 };
+
+export function DeletePostButton(_props: DeletePostButtonProps) {
+  // Componente temporariamente desabilitado
+  return (
+    <div className="text-sm text-gray-500">
+      Funcionalidade de posts em desenvolvimento
+    </div>
+  );
+}
+
+/* 
+// CÓDIGO ORIGINAL COMENTADO:
 
 export function DeletePostButton({ id, title }: DeletePostButtonProps) {
   const [isPending, startTransition] = useTransition();
@@ -66,3 +73,4 @@ export function DeletePostButton({ id, title }: DeletePostButtonProps) {
     </>
   );
 }
+*/

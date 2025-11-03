@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm/relations";
-import { tbUsers, tbFinancial, tbHealthMetrics, tbPersonalData, tbCheckIns } from "./schema";
+
+import { tbCheckIns,tbFinancial, tbHealthMetrics, tbPersonalData, tbUsers } from "./schema";
 
 export const tbFinancialRelations = relations(tbFinancial, ({one}) => ({
 	tbUser: one(tbUsers, {

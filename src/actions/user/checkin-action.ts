@@ -177,7 +177,6 @@ export async function checkInAction(
       checkInTime: timeString,
       method: validatedData.method,
       identifier: validatedData.identifier,
-      createdAt: todayString,
     });
 
     return {

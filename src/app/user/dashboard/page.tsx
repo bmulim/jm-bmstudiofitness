@@ -1,19 +1,15 @@
 "use client";
 
-import { Activity, Calendar, Heart, LogOut, User } from "lucide-react";
-import Link from "next/link";
+import { Activity, Calendar, Heart, User } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { logoutAction } from "@/actions/auth/logout-action";
 import { getStudentDataAction } from "@/actions/user/get-student-data-action";
-import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  UserDashboardHeader,
+  UserInfoCard,
+  UserNavigationCard,
+} from "@/components/Dashboard";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface StudentData {
   user: {
@@ -103,180 +99,90 @@ export default function StudentDashboard() {
     <div className="min-h-screen text-white">
       <div className="container mx-auto p-4 lg:p-8">
         {/* Cabeçalho */}
-        <Card className="mb-8 border-[#C2A537] bg-black/95">
-          <CardHeader>
-            <div className="flex flex-col items-center justify-between gap-4 lg:flex-row">
-              <div className="text-center lg:text-left">
-                <CardTitle className="text-2xl text-[#C2A537] lg:text-3xl">
-                  🏋️ Bem-vindo, {studentData.user.name}!
-                </CardTitle>
-                <CardDescription className="text-lg text-slate-300">
-                  Sua área pessoal do JM Fitness Studio
-                </CardDescription>
-              </div>
-
-              {/* Botão de Logout */}
-              <form action={logoutAction}>
-                <Button
-                  type="submit"
-                  variant="outline"
-                  className="border-[#C2A537] bg-black/95 text-[#C2A537] hover:bg-[#C2A537]/10 hover:text-[#D4B547]"
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sair
-                </Button>
-              </form>
-            </div>
-          </CardHeader>
-        </Card>
+        <UserDashboardHeader userName={studentData.user.name} />
 
         {/* Cards de Navegação */}
         <div className="mb-8 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="border-blue-600 bg-blue-900/30 transition-transform hover:scale-105">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <User className="h-10 w-10 text-blue-400" />
-                <div>
-                  <h3 className="font-semibold text-blue-400">Meus Dados</h3>
-                  <p className="text-sm text-blue-300">Informações pessoais</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <UserNavigationCard
+            icon={User}
+            title="Meus Dados"
+            description="Informações pessoais"
+            colorClass="border-blue-600 bg-blue-900/30"
+          />
 
-          <Link href="/user/health">
-            <Card className="cursor-pointer border-green-600 bg-green-900/30 transition-transform hover:scale-105">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <Heart className="h-10 w-10 text-green-400" />
-                  <div>
-                    <h3 className="font-semibold text-green-400">
-                      Histórico de Saúde
-                    </h3>
-                    <p className="text-sm text-green-300">
-                      Métricas e evolução
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
+          <UserNavigationCard
+            icon={Heart}
+            title="Histórico de Saúde"
+            description="Métricas e evolução"
+            href="/user/health"
+            colorClass="border-green-600 bg-green-900/30"
+          />
 
-          <Link href="/user/check-ins">
-            <Card className="cursor-pointer border-orange-600 bg-orange-900/30 transition-transform hover:scale-105">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <Activity className="h-10 w-10 text-orange-400" />
-                  <div>
-                    <h3 className="font-semibold text-orange-400">Check-ins</h3>
-                    <p className="text-sm text-orange-300">
-                      Histórico de presenças
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
+          <UserNavigationCard
+            icon={Activity}
+            title="Check-ins"
+            description="Histórico de presenças"
+            href="/user/check-ins"
+            colorClass="border-orange-600 bg-orange-900/30"
+          />
 
-          <Card className="border-purple-600 bg-purple-900/30 transition-transform hover:scale-105">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <Calendar className="h-10 w-10 text-purple-400" />
-                <div>
-                  <h3 className="font-semibold text-purple-400">Pagamentos</h3>
-                  <p className="text-sm text-purple-300">Status financeiro</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <UserNavigationCard
+            icon={Calendar}
+            title="Pagamentos"
+            description="Status financeiro"
+            colorClass="border-purple-600 bg-purple-900/30"
+          />
         </div>
 
         {/* Resumo Rápido */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {/* Dados Pessoais */}
-          <Card className="border-[#C2A537]/50 bg-black/40">
-            <CardHeader>
-              <CardTitle className="text-[#C2A537]">
-                Informações Pessoais
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div>
-                <p className="text-sm text-slate-400">E-mail</p>
-                <p className="text-white">{studentData.personalData.email}</p>
-              </div>
-              <div>
-                <p className="text-sm text-slate-400">Idade</p>
-                <p className="text-white">{age} anos</p>
-              </div>
-              <div>
-                <p className="text-sm text-slate-400">Telefone</p>
-                <p className="text-white">
-                  {studentData.personalData.telephone}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <UserInfoCard
+            title="Informações Pessoais"
+            data={[
+              { label: "E-mail", value: studentData.personalData.email },
+              { label: "Idade", value: `${age} anos` },
+              { label: "Telefone", value: studentData.personalData.telephone },
+            ]}
+          />
 
           {/* Dados de Saúde */}
-          <Card className="border-[#C2A537]/50 bg-black/40">
-            <CardHeader>
-              <CardTitle className="text-[#C2A537]">Dados de Saúde</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div>
-                <p className="text-sm text-slate-400">Altura</p>
-                <p className="text-white">
-                  {studentData.healthMetrics.heightCm} cm
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-slate-400">Peso</p>
-                <p className="text-white">
-                  {studentData.healthMetrics.weightKg} kg
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-slate-400">Tipo Sanguíneo</p>
-                <p className="text-white">
-                  {studentData.healthMetrics.bloodType}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <UserInfoCard
+            title="Dados de Saúde"
+            data={[
+              {
+                label: "Altura",
+                value: `${studentData.healthMetrics.heightCm} cm`,
+              },
+              {
+                label: "Peso",
+                value: `${studentData.healthMetrics.weightKg} kg`,
+              },
+              {
+                label: "Tipo Sanguíneo",
+                value: studentData.healthMetrics.bloodType,
+              },
+            ]}
+          />
 
           {/* Status Financeiro */}
-          <Card className="border-[#C2A537]/50 bg-black/40">
-            <CardHeader>
-              <CardTitle className="text-[#C2A537]">
-                Status Financeiro
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div>
-                <p className="text-sm text-slate-400">Mensalidade</p>
-                <p className="text-white">{monthlyFee}</p>
-              </div>
-              <div>
-                <p className="text-sm text-slate-400">Vencimento</p>
-                <p className="text-white">
-                  Dia {studentData.financial.dueDate}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-slate-400">Status</p>
-                <p
-                  className={`font-semibold ${
-                    studentData.financial.paid
-                      ? "text-green-400"
-                      : "text-red-400"
-                  }`}
-                >
-                  {studentData.financial.paid ? "✅ Em dia" : "❌ Pendente"}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <UserInfoCard
+            title="Status Financeiro"
+            data={[
+              { label: "Mensalidade", value: monthlyFee },
+              {
+                label: "Vencimento",
+                value: `Dia ${studentData.financial.dueDate}`,
+              },
+              {
+                label: "Status",
+                value: studentData.financial.paid ? "✅ Em dia" : "❌ Pendente",
+                className: `font-semibold ${
+                  studentData.financial.paid ? "text-green-400" : "text-red-400"
+                }`,
+              },
+            ]}
+          />
         </div>
       </div>
     </div>

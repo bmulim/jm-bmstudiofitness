@@ -1,9 +1,9 @@
+import { eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
-import { getUserFromRequestEdge } from "@/lib/auth-edge";
 import { db } from "@/db";
-import { usersTable, personalDataTable } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { personalDataTable,usersTable } from "@/db/schema";
+import { getUserFromRequestEdge } from "@/lib/auth-edge";
 
 export async function GET(request: NextRequest) {
   try {

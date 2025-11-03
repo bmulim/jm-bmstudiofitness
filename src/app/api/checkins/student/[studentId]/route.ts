@@ -6,10 +6,10 @@ import { checkInTable, usersTable } from "@/db/schema";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { studentId: string } },
+  { params }: { params: Promise<{ studentId: string }> },
 ) {
   try {
-    const { studentId } = params;
+    const { studentId } = await params;
 
     if (!studentId) {
       return NextResponse.json(

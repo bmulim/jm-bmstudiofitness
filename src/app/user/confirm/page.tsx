@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { useActionState, useEffect, useState } from "react";
 
 import { confirmUserAction } from "@/actions/user/confirm-user-action";
@@ -31,7 +32,7 @@ const initialState: ConfirmUserState = {
   message: "",
 };
 
-export default function ConfirmUserPage() {
+function ConfirmUserContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get("token");
@@ -195,5 +196,13 @@ export default function ConfirmUserPage() {
         </Card>
       </div>
     </Container>
+  );
+}
+
+export default function ConfirmUserPage() {
+  return (
+    <Suspense fallback={<div>Carregando...</div>}>
+      <ConfirmUserContent />
+    </Suspense>
   );
 }

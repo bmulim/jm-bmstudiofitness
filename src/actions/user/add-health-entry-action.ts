@@ -78,7 +78,7 @@ export async function addStudentHealthEntryAction(
 
     if (!validationResult.success) {
       const errors: Record<string, string[]> = {};
-      validationResult.error.errors.forEach((error) => {
+      validationResult.error.issues.forEach((error) => {
         const field = error.path[0] as string;
         if (!errors[field]) {
           errors[field] = [];
