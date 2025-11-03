@@ -18,7 +18,10 @@ export class ConfigurationValidator {
         switch (key) {
           // Validações de Layout
           case "theme":
-            if (typeof value === "string" && ["light", "dark", "auto"].includes(value)) {
+            if (
+              typeof value === "string" &&
+              ["light", "dark", "auto"].includes(value)
+            ) {
               sanitized.theme = value as "light" | "dark" | "auto";
             } else {
               errors.push("Tema inválido");
@@ -41,7 +44,10 @@ export class ConfigurationValidator {
             break;
 
           case "studentsViewMode":
-            if (typeof value === "string" && ["detailed", "compact", "table"].includes(value)) {
+            if (
+              typeof value === "string" &&
+              ["detailed", "compact", "table"].includes(value)
+            ) {
               sanitized.studentsViewMode = value as
                 | "detailed"
                 | "compact"
@@ -150,7 +156,10 @@ export class ConfigurationValidator {
 
           // Validações de ordenação
           case "sortBy":
-            if (typeof value === "string" && ["name", "date", "payment"].includes(value)) {
+            if (
+              typeof value === "string" &&
+              ["name", "date", "payment"].includes(value)
+            ) {
               sanitized.sortBy = value as "name" | "date" | "payment";
             } else {
               errors.push("Campo de ordenação inválido");
