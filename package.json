@@ -1,7 +1,7 @@
 {
-  "name": "jm-bmstudiofitness",
+  "name": "jm-fitness-studio",
   "version": "0.1.0",
-  "description": "Sistema completo de gerenciamento para academias com check-ins, controle financeiro e administração de alunos",
+  "description": "JM Fitness Studio - Sistema completo de gerenciamento para academias com check-ins, controle financeiro e administração de alunos",
   "author": "Bruno Mulim <bmulim@gmail.com>",
   "private": true,
   "scripts": {

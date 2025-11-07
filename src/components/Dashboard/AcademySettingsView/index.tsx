@@ -21,11 +21,11 @@ export function AcademySettingsView({ onBack }: AcademySettingsViewProps) {
   // Mock data para demonstração
   const [settings, setSettings] = useState({
     general: {
-      name: "BM Studio Fitness",
+      name: "JM Fitness Studio",
       address: "Rua das Flores, 123 - Centro",
       phone: "(11) 99999-9999",
-      email: "contato@bmstudio.com",
-      website: "www.bmstudio.com",
+      email: "contato@jmfitnessstudio.com",
+      website: "www.jmfitnessstudio.com",
       capacity: "150",
     },
     hours: {

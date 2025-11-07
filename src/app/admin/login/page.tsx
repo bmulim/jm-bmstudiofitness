@@ -115,7 +115,7 @@ const AdminLogin = () => {
                           id="email"
                           name="email"
                           type="email"
-                          placeholder="admin@bmstudio.com"
+                          placeholder="admin@jmfitnessstudio.com"
                           required
                           disabled={isPending}
                           defaultValue={state.email}

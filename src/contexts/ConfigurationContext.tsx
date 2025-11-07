@@ -84,10 +84,10 @@ const defaultSettings: ConfigurationSettings = {
   systemAlerts: true,
 
   // Academia
-  gymName: "BM Studio Fitness",
+  gymName: "JM Fitness Studio",
   address: "Rua das Flores, 123",
   phone: "(11) 99999-9999",
-  email: "contato@bmstudio.com",
+  email: "contato@jmfitnessstudio.com",
   openTime: "06:00",
   closeTime: "22:00",
 
