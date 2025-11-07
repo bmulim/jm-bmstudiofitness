@@ -74,10 +74,7 @@ export default async function PostPage({ params }: Props) {
         <section className="border-b border-slate-800 py-8">
           <Container>
             <Link href="/blog">
-              <Button
-                variant="outline"
-                className="border-slate-600 text-slate-300 hover:bg-slate-800"
-              >
+              <Button className="bg-[#C2A537] text-black transition-all duration-300 hover:bg-[#D4B547] hover:text-black">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Voltar ao blog
               </Button>

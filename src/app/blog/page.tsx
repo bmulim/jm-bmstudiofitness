@@ -154,10 +154,7 @@ export default async function BlogPage() {
                     )}
 
                     <Link href={`/blog/${post.slug}`}>
-                      <Button
-                        variant="outline"
-                        className="w-full border-slate-600 text-slate-300 transition-all duration-300 hover:border-[#C2A537] hover:bg-[#C2A537] hover:text-black"
-                      >
+                      <Button className="w-full bg-[#C2A537] text-black transition-all duration-300 hover:bg-[#D4B547] hover:text-black">
                         Ler post completo
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>

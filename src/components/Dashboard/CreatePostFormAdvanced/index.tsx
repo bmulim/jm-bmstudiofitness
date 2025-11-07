@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft, ImageIcon, Save, Tag } from "lucide-react";
-import { useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 
 import { getCategoriesAction } from "@/actions/admin/manage-categories-action";
 import { RichTextEditor } from "@/components/RichTextEditor";
@@ -120,9 +120,8 @@ export function CreatePostFormAdvanced({
           </p>
         </div>
         <Button
-          variant="outline"
           onClick={onCancel}
-          className="border-slate-600 text-slate-300 hover:bg-slate-800"
+          className="border-slate-600 bg-slate-700 text-slate-300 hover:bg-slate-600"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Voltar
@@ -299,10 +298,9 @@ export function CreatePostFormAdvanced({
                 <CardTitle className="text-[#C2A537]">SEO</CardTitle>
                 <Button
                   type="button"
-                  variant="outline"
                   size="sm"
                   onClick={() => setShowSEO(!showSEO)}
-                  className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                  className="border-[#C2A537] bg-[#C2A537] text-black hover:bg-[#D4B547]"
                 >
                   {showSEO ? "Ocultar" : "Mostrar"} opções SEO
                 </Button>
@@ -368,10 +366,9 @@ export function CreatePostFormAdvanced({
 
           <Button
             type="button"
-            variant="outline"
             onClick={onCancel}
             disabled={loading}
-            className="border-slate-600 text-slate-300 hover:bg-slate-800"
+            className="border-slate-600 bg-slate-700 text-slate-300 hover:bg-slate-600"
           >
             Cancelar
           </Button>

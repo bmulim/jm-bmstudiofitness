@@ -713,10 +713,11 @@ import { RichTextEditor } from "@/components/RichTextEditor";
   onChange={setContent}
   placeholder="Write your blog post content..."
   className="min-h-[400px]"
-/>
+/>;
 ```
 
 **Editor Features:**
+
 - **Markdown Support**: Real-time preview and editing
 - **Toolbar**: Bold, italic, headers, lists, links, images
 - **Preview Mode**: Side-by-side preview functionality
@@ -735,7 +736,7 @@ await createPostAction({
   categoryId: 1,
   metaTitle: "SEO Title",
   metaDescription: "SEO Description",
-  tags: ["fitness", "health"]
+  tags: ["fitness", "health"],
 });
 
 // Get published posts (Public)
@@ -744,7 +745,7 @@ const posts = await getPublishedPostsAction();
 // Update post (Admin only)
 await updatePostAction(postId, {
   title: "Updated Title",
-  content: "Updated content"
+  content: "Updated content",
 });
 ```
 
@@ -752,14 +753,16 @@ await updatePostAction(postId, {
 
 ```typescript
 // Automatic meta tag generation
-export async function generateMetadata({ params }: BlogPostProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: BlogPostProps): Promise<Metadata> {
   const { slug } = await params;
   const post = await getPostBySlugAction(slug);
-  
+
   return {
     title: post.metaTitle || post.title,
     description: post.metaDescription || post.excerpt,
-    keywords: post.metaKeywords?.split(','),
+    keywords: post.metaKeywords?.split(","),
     openGraph: {
       title: post.title,
       description: post.excerpt,
@@ -786,6 +789,7 @@ The user management system provides complete control over all system users with 
 ### **User Roles & Permissions**
 
 #### **👑 Administrator (admin)**
+
 - ✅ **Full Access**: Complete system functionality
 - ✅ **User Management**: Create, edit, delete any user
 - ✅ **Financial Data**: Complete access to financial reports
@@ -794,6 +798,7 @@ The user management system provides complete control over all system users with 
 - 🔑 **Area**: `/admin` (complete administrative dashboard)
 
 #### **👨‍🏫 Instructor (professor)**
+
 - ✅ **Student Management**: Register and edit student data
 - ✅ **Health Data**: Complete access to student health data
 - ✅ **Coach Notes**: Create and edit private observations
@@ -802,6 +807,7 @@ The user management system provides complete control over all system users with 
 - 🔑 **Area**: `/coach` (instructor-specific area)
 
 #### **💼 Staff (funcionario)**
+
 - ✅ **Student Management**: Register and edit student data
 - ✅ **Financial Data**: Access to student financial data
 - ✅ **Reports**: View financial reports
@@ -810,6 +816,7 @@ The user management system provides complete control over all system users with 
 - 🔑 **Area**: `/admin` (limited administrative dashboard)
 
 #### **🏋️‍♂️ Student (aluno)**
+
 - ✅ **Personal Data**: View and edit own personal data
 - ✅ **Health Data**: View own health data (except coach notes)
 - ✅ **Financial Data**: View own financial data
@@ -819,6 +826,7 @@ The user management system provides complete control over all system users with 
 ### **User Management Features**
 
 #### **✅ User Creation**
+
 - Complete form with validation
 - Required fields: Name, Email, Password, Role
 - Optional fields: CPF, Phone, Address, Birth Date
@@ -826,12 +834,14 @@ The user management system provides complete control over all system users with 
 - Password hashing with bcryptjs
 
 #### **✅ User Listing & Search**
+
 - List all registered users
 - Search by name, email, or CPF
 - Filter by role (Admin, Staff, Instructor, Student)
 - Active user statistics by role
 
 #### **✅ User Actions**
+
 - Edit user information
 - Delete user with confirmation
 - Active/inactive status management
@@ -842,9 +852,9 @@ The user management system provides complete control over all system users with 
 // Create new user (Admin only)
 const createUserAction = async (userData: UserCreateData) => {
   await requireAdmin(); // Security check
-  
+
   const hashedPassword = await hashPassword(userData.password);
-  
+
   const newUser = await db.insert(usersTable).values({
     name: userData.name,
     email: userData.email.toLowerCase(),
@@ -854,30 +864,30 @@ const createUserAction = async (userData: UserCreateData) => {
     phone: userData.phone,
     birthDate: userData.birthDate,
   });
-  
+
   return newUser;
 };
 
 // List users with search and filters
 const getUsersAction = async (filters: UserFilters) => {
   await requireAdmin();
-  
+
   let query = db.select().from(usersTable);
-  
+
   if (filters.search) {
     query = query.where(
       or(
         ilike(usersTable.name, `%${filters.search}%`),
         ilike(usersTable.email, `%${filters.search}%`),
-        ilike(usersTable.cpf, `%${filters.search}%`)
-      )
+        ilike(usersTable.cpf, `%${filters.search}%`),
+      ),
     );
   }
-  
+
   if (filters.role) {
     query = query.where(eq(usersTable.role, filters.role));
   }
-  
+
   return await query;
 };
 ```
@@ -895,6 +905,7 @@ The system supports multiple email providers for maximum flexibility and reliabi
 **Why use:** Easy, reliable, good pricing, developer-friendly.
 
 **Setup:**
+
 1. **Create account:** https://resend.com
 2. **Get API Key:** Dashboard → API Keys → Create API Key
 3. **Configure domain:** Domains → Add Domain (optional, can use resend.dev)
@@ -914,6 +925,7 @@ EMAIL_FROM_NAME="JM Fitness Studio"
 **Why use:** Free, easy if you already have Gmail.
 
 **Setup:**
+
 1. **Enable 2FA** on your Google account
 2. **Create app password:**
    - Google Account → Security → 2-Step Verification → App passwords
@@ -934,6 +946,7 @@ EMAIL_FROM_NAME="JM Fitness Studio"
 ### **⚡ 3. MAILGUN**
 
 **Setup:**
+
 ```bash
 EMAIL_PROVIDER="mailgun"
 MAILGUN_API_KEY="your-api-key"
@@ -945,6 +958,7 @@ EMAIL_FROM_NAME="JM Fitness Studio"
 ### **🚀 4. SENDGRID**
 
 **Setup:**
+
 ```bash
 EMAIL_PROVIDER="sendgrid"
 SENDGRID_API_KEY="SG.your-api-key"
@@ -960,7 +974,7 @@ await sendWelcomeEmail({
   to: student.email,
   name: student.name,
   confirmationToken: token,
-  loginUrl: `${process.env.NEXTAUTH_URL}/user/login`
+  loginUrl: `${process.env.NEXTAUTH_URL}/user/login`,
 });
 
 // Payment reminder emails
@@ -969,7 +983,7 @@ await sendPaymentReminder({
   name: student.name,
   amount: payment.amount,
   dueDate: payment.dueDate,
-  paymentUrl: `${process.env.NEXTAUTH_URL}/user/payments`
+  paymentUrl: `${process.env.NEXTAUTH_URL}/user/payments`,
 });
 
 // Check-in confirmation
@@ -977,7 +991,7 @@ await sendCheckinConfirmation({
   to: student.email,
   name: student.name,
   checkinTime: new Date(),
-  location: "JM Fitness Studio"
+  location: "JM Fitness Studio",
 });
 ```
 
@@ -1004,6 +1018,7 @@ The system implements comprehensive security measures to protect sensitive stude
 ### **🛡️ Authentication Security**
 
 #### **JWT Token Security**
+
 ```typescript
 interface JWTPayload {
   userId: string;
@@ -1022,13 +1037,14 @@ const token = await new SignJWT(payload)
 ```
 
 #### **Secure Cookie Configuration**
+
 ```typescript
 cookieStore.set("auth-token", token, {
-  httpOnly: true,                    // ✅ Not accessible via JavaScript
+  httpOnly: true, // ✅ Not accessible via JavaScript
   secure: process.env.NODE_ENV === "production", // ✅ HTTPS in production
-  sameSite: "lax",                   // ✅ CSRF protection
-  maxAge: 7 * 24 * 60 * 60,         // ✅ 7 days expiration
-  path: "/",                         // ✅ Application scope
+  sameSite: "lax", // ✅ CSRF protection
+  maxAge: 7 * 24 * 60 * 60, // ✅ 7 days expiration
+  path: "/", // ✅ Application scope
 });
 ```
 
@@ -1037,20 +1053,20 @@ cookieStore.set("auth-token", token, {
 ```typescript
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  
+
   // Protect administrative routes
   if (pathname.startsWith("/admin")) {
     const user = await getUserFromRequestEdge(request);
-    
+
     if (!user) {
       return NextResponse.redirect(new URL("/admin/login", request.url));
     }
-    
+
     if (!["admin", "funcionario"].includes(user.role)) {
       return NextResponse.redirect(new URL("/unauthorized", request.url));
     }
   }
-  
+
   return NextResponse.next();
 }
 ```
@@ -1061,15 +1077,17 @@ export async function middleware(request: NextRequest) {
 // All administrative actions are protected
 export async function requireAdmin() {
   const user = await getCurrentUser();
-  
+
   if (!user) {
     throw new Error("User not authenticated");
   }
-  
+
   if (user.role !== "admin") {
-    throw new Error("Access denied. Only administrators can perform this action.");
+    throw new Error(
+      "Access denied. Only administrators can perform this action.",
+    );
   }
-  
+
   return user;
 }
 
@@ -1083,6 +1101,7 @@ export async function createPostAction(data: PostData) {
 ### **🗄️ Database Security**
 
 #### **SQL Injection Protection**
+
 ```typescript
 // Parameterized queries (anti SQL injection)
 const userQuery = await db
@@ -1094,6 +1113,7 @@ const userQuery = await db
 ```
 
 #### **Data Validation with Zod**
+
 ```typescript
 const cadastroAlunoSchema = z.object({
   name: z.string().min(2, "Name must have at least 2 characters"),
@@ -1106,6 +1126,7 @@ const cadastroAlunoSchema = z.object({
 ### **🔐 Sensitive Data Protection**
 
 #### **SensitiveData Component**
+
 ```tsx
 import { SensitiveData } from "@/components/SensitiveData";
 
@@ -1116,10 +1137,11 @@ import { SensitiveData } from "@/components/SensitiveData";
   label="CPF"
   className="text-white"
   showToggle={true}
-/>
+/>;
 ```
 
 **Supported types:**
+
 - `cpf` - Documents
 - `phone` - Phone numbers
 - `email` - Email addresses
@@ -1128,6 +1150,7 @@ import { SensitiveData } from "@/components/SensitiveData";
 - `payment` - Financial data
 
 #### **SecurityModal Component**
+
 ```tsx
 import { SecurityModal } from "@/components/SecurityModal";
 
@@ -1137,34 +1160,36 @@ import { SecurityModal } from "@/components/SecurityModal";
   onValidate={handlePasswordValidation}
   title="Access to Sensitive Data"
   description="Confirm your password to continue."
-/>
+/>;
 ```
 
 ### **�📊 Security Audit Results**
 
-| Category | Status | Score |
-|----------|--------|-------|
-| Authentication | ✅ Approved | 20/20 |
-| Authorization | ✅ Approved | 20/20 |
-| Server Actions | ✅ Approved | 20/20 |
-| Database | ✅ Approved | 18/20* |
-| Sessions/Cookies | ✅ Approved | 20/20 |
-| **TOTAL** | ✅ **APPROVED** | **98/100** |
+| Category         | Status          | Score      |
+| ---------------- | --------------- | ---------- |
+| Authentication   | ✅ Approved     | 20/20      |
+| Authorization    | ✅ Approved     | 20/20      |
+| Server Actions   | ✅ Approved     | 20/20      |
+| Database         | ✅ Approved     | 18/20\*    |
+| Sessions/Cookies | ✅ Approved     | 20/20      |
+| **TOTAL**        | ✅ **APPROVED** | **98/100** |
 
-*(-2 points): Missing rate limiting on login actions
+\*(-2 points): Missing rate limiting on login actions
 
 ### **🚨 Security Recommendations**
 
 #### **1. Rate Limiting (Low Priority)**
+
 ```typescript
 // Implement rate limiting on login
 export async function loginAction() {
-  await rateLimit(request.ip, { max: 5, window: '15m' });
+  await rateLimit(request.ip, { max: 5, window: "15m" });
   // ... rest of logic
 }
 ```
 
 #### **2. Security Logging (Low Priority)**
+
 ```typescript
 // Add security logs
 console.log(`🔒 Login attempt: ${email} from ${request.ip}`);
@@ -1182,11 +1207,13 @@ The system includes a robust testing setup with Jest and Testing Library for com
 ### **🎯 Testing Strategy**
 
 #### **Manual Execution Only**
+
 Tests are configured for **MANUAL EXECUTION ONLY**. No automatic execution when saving files.
 
 ### **🚀 Available Commands**
 
 #### **Basic Execution**
+
 ```bash
 # Run all tests once
 npm test
@@ -1199,6 +1226,7 @@ npm test -- --onlyFailures
 ```
 
 #### **Watch Mode (Manual)**
+
 ```bash
 # Run tests in watch mode (waits for you to save to re-execute)
 npm run test:watch
@@ -1208,6 +1236,7 @@ npm run test:coverage -- --watch
 ```
 
 #### **Code Coverage**
+
 ```bash
 # Run tests with coverage report
 npm run test:coverage
@@ -1217,6 +1246,7 @@ npm run test:coverage -- --coverage --coverageDirectory=coverage
 ```
 
 #### **Specific Execution**
+
 ```bash
 # Run tests from specific file
 npm test -- CreateUserForm.test.tsx
@@ -1231,6 +1261,7 @@ npm test -- tests/components/
 ### **📊 Test Results Summary**
 
 #### **✅ Current Status**
+
 All tests have been successfully fixed! We identified and resolved all major issues:
 
 #### **🐛 Issues Found and Resolved:**
@@ -1248,10 +1279,12 @@ All tests have been successfully fixed! We identified and resolved all major iss
 #### **📈 Test Coverage**
 
 #### **ToastProvider: 100% ✅**
+
 - 7/7 tests passing
 - Complete feature coverage
 
 #### **StudentsTab: Functional ✅**
+
 - Simple test confirmed functionality
 - Search and filtering tested
 
@@ -1332,11 +1365,13 @@ All tests have been successfully fixed! We identified and resolved all major iss
 ### **🔐 Administrative Area (`/admin`)**
 
 #### **Main Dashboard**
+
 - **Real-Time Metrics**: Active students, daily check-ins, monthly revenue, default rate
 - **Interactive Charts**: Weekly frequency, financial evolution, top 10 students
 - **Visual Alerts**: Overdue payments highlighted
 
 #### **Complete Student Management**
+
 - **Smart List**: Advanced search and multiple filters
 - **Robust Registration**: Form with real-time validation
 - **Complete Editing**: Update all data
@@ -1344,6 +1379,7 @@ All tests have been successfully fixed! We identified and resolved all major iss
 - **Integrated Financial Control**: Payment status, preferred method, due date
 
 #### **Advanced Check-in Reports**
+
 - **Visual Calendar**: Intuitive monthly frequency interface
 - **Powerful Filters**: By student, period, payment status
 - **Export**: Structured data in CSV
@@ -1351,11 +1387,13 @@ All tests have been successfully fixed! We identified and resolved all major iss
 ### **👤 User Area (`/user`)**
 
 #### **Secure Login (`/user/login`)**
+
 - **Robust Authentication**: Email and password with encryption
 - **Visual Validation**: Immediate error feedback
 - **Smart Redirection**: Based on user profile
 
 #### **Personalized Dashboard (`/user/[id]`)**
+
 - **Complete Profile**: Personal data and profile photo
 - **Detailed History**: Latest frequencies with dates
 - **Financial Status**: Current payment situation
@@ -1376,6 +1414,7 @@ All tests have been successfully fixed! We identified and resolved all major iss
 ### **🗄️ Database Structure**
 
 #### Financial Table Schema
+
 ```sql
 tb_financial (
   id UUID PRIMARY KEY,
@@ -1391,6 +1430,7 @@ tb_financial (
 ```
 
 #### Available Payment Methods
+
 - **cash** - Cash payment
 - **pix** - Instant transfer
 - **credit_card** - Credit card
@@ -1400,6 +1440,7 @@ tb_financial (
 ### **📋 Updated Registration Form**
 
 New fields added in "Financial Data" section:
+
 1. **Monthly Fee Amount**: Numeric input with decimals, validation: $50.00 - $1,000.00
 2. **Payment Method**: Select with predefined options, required field
 3. **Due Date**: Select day 1-10 of month
@@ -1412,14 +1453,14 @@ New fields added in "Financial Data" section:
 
 ```typescript
 interface DashboardMetrics {
-  totalStudents: number;     // Total students
-  activeStudents: number;    // Active students
-  todayCheckins: number;     // Check-ins today
-  weekCheckins: number;      // Check-ins this week
-  monthlyRevenue: number;    // Monthly revenue
-  overduePayments: number;   // Overdue payments
-  checkinRate: number;       // Attendance rate
-  newStudentsMonth: number;  // New students this month
+  totalStudents: number; // Total students
+  activeStudents: number; // Active students
+  todayCheckins: number; // Check-ins today
+  weekCheckins: number; // Check-ins this week
+  monthlyRevenue: number; // Monthly revenue
+  overduePayments: number; // Overdue payments
+  checkinRate: number; // Attendance rate
+  newStudentsMonth: number; // New students this month
 }
 ```
 
@@ -1658,7 +1699,8 @@ const smtpConfig = {
 ```typescript
 export const metadata: Metadata = {
   title: "JM Fitness Studio - Gym in Duque de Caxias",
-  description: "Transform your life at JM Fitness Studio. Modern gym with cutting-edge equipment in Duque de Caxias.",
+  description:
+    "Transform your life at JM Fitness Studio. Modern gym with cutting-edge equipment in Duque de Caxias.",
   keywords: "gym, fitness, weight training, duque de caxias, gymnastics",
   authors: [{ name: "Bruno Mulim" }],
   openGraph: {

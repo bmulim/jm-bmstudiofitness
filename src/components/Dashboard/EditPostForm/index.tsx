@@ -92,9 +92,8 @@ export function EditPostForm({
           </p>
         </div>
         <Button
-          variant="outline"
           onClick={onCancel}
-          className="border-slate-600 text-slate-300 hover:bg-slate-800"
+          className="border-slate-600 bg-slate-700 text-slate-300 hover:bg-slate-600"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Voltar
@@ -252,10 +251,9 @@ export function EditPostForm({
 
               <Button
                 type="button"
-                variant="outline"
                 onClick={onCancel}
                 disabled={loading}
-                className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                className="border-slate-600 bg-slate-700 text-slate-300 hover:bg-slate-600"
               >
                 Cancelar
               </Button>

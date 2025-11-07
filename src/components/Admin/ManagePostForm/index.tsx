@@ -228,11 +228,10 @@ export function ManagePostForm() {
                     <div className="flex items-center gap-2">
                       <Button
                         size="sm"
-                        variant="outline"
                         onClick={() =>
                           handleTogglePublished(post.id, !post.published)
                         }
-                        className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                        className="border-[#C2A537] bg-[#C2A537] text-black hover:bg-[#D4B547]"
                       >
                         {post.published ? (
                           <EyeOff className="h-4 w-4" />
@@ -242,17 +241,15 @@ export function ManagePostForm() {
                       </Button>
                       <Button
                         size="sm"
-                        variant="outline"
                         onClick={() => setEditingPost(post)}
-                        className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                        className="border-[#C2A537] bg-[#C2A537] text-black hover:bg-[#D4B547]"
                       >
                         <Edit3 className="h-4 w-4" />
                       </Button>
                       <Button
                         size="sm"
-                        variant="outline"
                         onClick={() => handleDeletePost(post.id)}
-                        className="border-red-600 text-red-400 hover:bg-red-900/20"
+                        className="border-red-600 bg-red-600 text-white hover:bg-red-700"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
