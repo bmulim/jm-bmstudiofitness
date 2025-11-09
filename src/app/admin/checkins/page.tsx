@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { AdminLayout } from "@/components/Admin/AdminLayout";
 import { Button } from "@/components/Button";
+import CheckInCalendar from "@/components/CheckInCalendar";
 import {
   Card,
   CardContent,
@@ -40,7 +41,6 @@ export default function CheckInsAdminPage() {
     null,
   );
   const [checkIns, setCheckIns] = useState<CheckInData[]>([]);
-  const [currentDate, setCurrentDate] = useState(new Date());
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
 
@@ -103,55 +103,6 @@ export default function CheckInsAdminPage() {
     setCheckIns([]);
     setSearchTerm("");
   };
-
-  // Função para navegar entre meses
-  const navigateMonth = (direction: "prev" | "next") => {
-    setCurrentDate((prev) => {
-      const newDate = new Date(prev);
-      if (direction === "prev") {
-        newDate.setMonth(newDate.getMonth() - 1);
-      } else {
-        newDate.setMonth(newDate.getMonth() + 1);
-      }
-      return newDate;
-    });
-  };
-
-  // Função para verificar se um dia tem check-in
-  const hasCheckIn = (date: Date) => {
-    const dateStr = date.toISOString().split("T")[0];
-    return checkIns.some((checkIn) => checkIn.checkInDate === dateStr);
-  };
-
-  // Função para obter check-ins de um dia específico
-  const getCheckInsForDate = (date: Date) => {
-    const dateStr = date.toISOString().split("T")[0];
-    return checkIns.filter((checkIn) => checkIn.checkInDate === dateStr);
-  };
-
-  // Gerar calendário
-  const generateCalendar = () => {
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const startDate = new Date(firstDay);
-    startDate.setDate(startDate.getDate() - firstDay.getDay());
-
-    const days = [];
-    const current = new Date(startDate);
-
-    // Gerar 42 dias (6 semanas)
-    for (let i = 0; i < 42; i++) {
-      days.push(new Date(current));
-      current.setDate(current.getDate() + 1);
-    }
-
-    return { days, firstDay, lastDay };
-  };
-
-  const { days, firstDay } = generateCalendar();
 
   return (
     <AdminLayout>
@@ -244,78 +195,24 @@ export default function CheckInsAdminPage() {
                     </div>
                   ) : (
                     <>
-                      {/* Navegação do calendário */}
-                      <div className="flex items-center justify-between">
-                        <Button
-                          onClick={() => navigateMonth("prev")}
-                          variant="outline"
-                          className="border-[#C2A537] text-[#C2A537] hover:bg-[#C2A537] hover:text-black"
-                        >
-                          ← Mês Anterior
-                        </Button>
-
-                        <h3 className="text-xl font-medium text-[#C2A537]">
-                          {firstDay
-                            .toLocaleDateString("pt-BR", {
-                              month: "long",
-                              year: "numeric",
-                            })
-                            .replace(/^\w/, (c) => c.toUpperCase())}
-                        </h3>
-
-                        <Button
-                          onClick={() => navigateMonth("next")}
-                          variant="outline"
-                          className="border-[#C2A537] text-[#C2A537] hover:bg-[#C2A537] hover:text-black"
-                        >
-                          Próximo Mês →
-                        </Button>
-                      </div>
-
-                      {/* Grade do calendário */}
-                      <div className="grid grid-cols-7 gap-1 rounded-lg border border-[#867536] p-4">
-                        {/* Cabeçalho dos dias da semana */}
-                        {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map(
-                          (day) => (
-                            <div
-                              key={day}
-                              className="p-2 text-center text-sm font-medium text-[#C2A537]"
-                            >
-                              {day}
-                            </div>
-                          ),
-                        )}
-
-                        {/* Dias do calendário */}
-                        {days.map((day, index) => {
-                          const isCurrentMonth =
-                            day.getMonth() === currentDate.getMonth();
-                          const hasCheckin = hasCheckIn(day);
-                          const dayCheckIns = getCheckInsForDate(day);
-
-                          return (
-                            <div
-                              key={index}
-                              className={`relative min-h-[60px] p-2 text-center ${isCurrentMonth ? "text-white" : "text-slate-600"} ${hasCheckin ? "border border-green-500 bg-green-900/30" : "border border-slate-700"} rounded-lg transition-colors hover:bg-slate-800/50`}
-                              title={
-                                hasCheckin
-                                  ? `${dayCheckIns.length} check-in(s)`
-                                  : ""
-                              }
-                            >
-                              <div className="text-sm">{day.getDate()}</div>
-                              {hasCheckin && (
-                                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 transform">
-                                  <div className="h-2 w-2 rounded-full bg-green-400"></div>
-                                  <div className="mt-1 text-xs text-green-400">
-                                    {dayCheckIns.length}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
+                      {/* Calendário de Check-ins */}
+                      <CheckInCalendar
+                        checkIns={checkIns.map((checkIn) => ({
+                          date: new Date(checkIn.checkInDate),
+                          time: checkIn.checkInTime,
+                          status: "present" as const,
+                        }))}
+                        onDateClick={(date) => {
+                          const dateStr = date.toISOString().split("T")[0];
+                          const dayCheckIns = checkIns.filter(
+                            (c) => c.checkInDate === dateStr,
                           );
-                        })}
-                      </div>
+                          if (dayCheckIns.length > 0) {
+                            console.log("Check-ins na data:", dayCheckIns);
+                          }
+                        }}
+                        showLegend={true}
+                      />
 
                       {/* Estatísticas */}
                       <div className="grid gap-4 md:grid-cols-3">

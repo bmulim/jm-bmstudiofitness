@@ -1,6 +1,6 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -112,7 +112,12 @@ export async function getAllStudentsFullDataAction(): Promise<
         healthMetricsTable,
         eq(usersTable.id, healthMetricsTable.userId),
       )
-      .where(eq(usersTable.userRole, UserRole.ALUNO))
+      .where(
+        and(
+          eq(usersTable.userRole, UserRole.ALUNO),
+          isNull(usersTable.deletedAt), // Filtrar apenas não deletados
+        ),
+      )
       .orderBy(usersTable.name);
 
     // Processar dados adicionais

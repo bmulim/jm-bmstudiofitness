@@ -6,7 +6,6 @@ import {
   getAllStudentsFullDataAction,
   StudentFullData,
 } from "@/actions/admin/get-students-full-data-action";
-import { AdminLayout } from "@/components/Admin/AdminLayout";
 import { AdminTabs, LoadingSpinner } from "@/components/Dashboard";
 
 export default function AdminDashboardPage() {
@@ -31,26 +30,19 @@ export default function AdminDashboardPage() {
 
   if (loading) {
     return (
-      <AdminLayout>
-        <div className="flex min-h-screen items-center justify-center">
-          <LoadingSpinner
-            message="Carregando dashboard..."
-            variant="gym"
-            size="lg"
-          />
-        </div>
-      </AdminLayout>
+      <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-black via-slate-900 to-black">
+        <LoadingSpinner
+          message="Carregando dashboard..."
+          variant="gym"
+          size="lg"
+        />
+      </div>
     );
   }
 
   return (
-    <AdminLayout>
-      <div className="min-h-screen w-full">
-        <div className="mx-auto max-w-7xl space-y-8 p-6">
-          {/* Sistema de Abas */}
-          <AdminTabs students={students} />
-        </div>
-      </div>
-    </AdminLayout>
+    <div className="min-h-screen bg-linear-to-br from-black via-slate-900 to-black">
+      <AdminTabs students={students} />
+    </div>
   );
 }

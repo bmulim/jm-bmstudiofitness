@@ -330,3 +330,15 @@ html {
     @apply bg-background text-foreground;
   }
 }
+/* Utilitários 3D para efeito de cubo */
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-12 {
+  transform: rotateY(12deg);
+}

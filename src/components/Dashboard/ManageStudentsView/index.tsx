@@ -4,8 +4,7 @@ import { motion } from "framer-motion";
 import {
   Edit,
   Eye,
-  MoreVertical,
-  Plus,
+  Loader2,
   Search,
   ToggleLeft,
   ToggleRight,
@@ -14,48 +13,20 @@ import {
   UserCheck,
   UserX,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
+import { deleteStudentAction } from "@/actions/admin/delete-student-action";
+import {
+  getAllStudentsFullDataAction,
+  StudentFullData,
+} from "@/actions/admin/get-students-full-data-action";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { EditStudentModal } from "@/components/Dashboard/EditStudentModal";
+import { showErrorToast, showSuccessToast } from "@/components/ToastProvider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-
-// Mock data - será substituído pelos dados reais depois
-const mockStudents = [
-  {
-    id: "1",
-    name: "João Silva",
-    email: "joao@email.com",
-    cpf: "123.456.789-00",
-    phone: "(11) 99999-9999",
-    status: "active",
-    paymentStatus: "up-to-date",
-    monthlyFee: "R$ 89,90",
-    joinDate: "2024-01-15",
-  },
-  {
-    id: "2",
-    name: "Maria Santos",
-    email: "maria@email.com",
-    cpf: "987.654.321-00",
-    phone: "(11) 88888-8888",
-    status: "active",
-    paymentStatus: "overdue",
-    monthlyFee: "R$ 89,90",
-    joinDate: "2024-02-20",
-  },
-  {
-    id: "3",
-    name: "Pedro Costa",
-    email: "pedro@email.com",
-    cpf: "456.789.123-00",
-    phone: "(11) 77777-7777",
-    status: "inactive",
-    paymentStatus: "pending",
-    monthlyFee: "R$ 89,90",
-    joinDate: "2024-03-10",
-  },
-];
+import { useConfirmDialog } from "@/hooks/useConfirmDialog";
 
 interface ManageStudentsViewProps {
   onBack: () => void;
@@ -66,22 +37,61 @@ export function ManageStudentsView({ onBack }: ManageStudentsViewProps) {
   const [filterStatus, setFilterStatus] = useState<
     "all" | "active" | "inactive"
   >("all");
+  const [students, setStudents] = useState<StudentFullData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [studentToEdit, setStudentToEdit] = useState<StudentFullData | null>(
+    null,
+  );
+
+  // Hook para dialog de confirmação
+  const { confirm, isOpen, options, handleConfirm, handleCancel } =
+    useConfirmDialog();
+
+  // Carregar alunos do banco de dados
+  useEffect(() => {
+    async function loadStudents() {
+      try {
+        setLoading(true);
+        const data = await getAllStudentsFullDataAction();
+        setStudents(data);
+      } catch (error) {
+        console.error("Erro ao carregar alunos:", error);
+        showErrorToast("Erro ao carregar lista de alunos");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadStudents();
+  }, []);
 
   // Filtrar estudantes
-  const filteredStudents = mockStudents.filter((student) => {
+  const filteredStudents = students.filter((student) => {
     const matchesSearch =
       student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       student.cpf.includes(searchTerm);
 
     const matchesFilter =
-      filterStatus === "all" || student.status === filterStatus;
+      filterStatus === "all" ||
+      (filterStatus === "active" && student.isPaymentUpToDate) ||
+      (filterStatus === "inactive" && !student.isPaymentUpToDate);
 
     return matchesSearch && matchesFilter;
   });
 
-  const getStatusBadge = (status: string) => {
-    if (status === "active") {
+  // Calcular estatísticas
+  const stats = {
+    total: students.length,
+    active: students.filter((s) => s.isPaymentUpToDate).length,
+    inactive: students.filter((s) => !s.isPaymentUpToDate).length,
+    pending: students.filter((s) => !s.paid).length,
+  };
+
+  const getStatusBadge = (isPaymentUpToDate: boolean) => {
+    if (isPaymentUpToDate) {
       return (
         <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
           <UserCheck className="mr-1 h-3 w-3" />
@@ -97,46 +107,85 @@ export function ManageStudentsView({ onBack }: ManageStudentsViewProps) {
     );
   };
 
-  const getPaymentBadge = (paymentStatus: string) => {
-    const badges = {
-      "up-to-date": "bg-green-100 text-green-800",
-      overdue: "bg-red-100 text-red-800",
-      pending: "bg-yellow-100 text-yellow-800",
-    };
-
-    const labels = {
-      "up-to-date": "Em dia",
-      overdue: "Vencido",
-      pending: "Pendente",
-    };
-
+  const getPaymentBadge = (paid: boolean, isPaymentUpToDate: boolean) => {
+    if (paid && isPaymentUpToDate) {
+      return (
+        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+          Em dia
+        </span>
+      );
+    }
+    if (!paid) {
+      return (
+        <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">
+          Pendente
+        </span>
+      );
+    }
     return (
-      <span
-        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${badges[paymentStatus as keyof typeof badges]}`}
-      >
-        {labels[paymentStatus as keyof typeof labels]}
+      <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">
+        Vencido
       </span>
     );
   };
 
-  const handleToggleStatus = (studentId: string) => {
-    // Aqui será implementada a lógica de ativar/desativar
-    console.log("Toggle status for student:", studentId);
+  const handleToggleStatus = async (student: StudentFullData) => {
+    try {
+      setActionLoading(true);
+
+      // Como não temos um campo isActive direto, esta funcionalidade
+      // precisaria ser expandida com base na lógica de negócio
+      showSuccessToast(
+        `Status de ${student.name}: ${student.isPaymentUpToDate ? "Em dia" : "Pendente"}`,
+      );
+    } catch (error) {
+      console.error("Erro ao alterar status:", error);
+      showErrorToast("Erro ao alterar status do aluno");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
-  const handleEditStudent = (studentId: string) => {
-    // Aqui será implementada a lógica de edição
-    console.log("Edit student:", studentId);
+  const handleEditStudent = (student: StudentFullData) => {
+    setStudentToEdit(student);
+    setIsEditModalOpen(true);
   };
 
-  const handleViewStudent = (studentId: string) => {
-    // Aqui será implementada a lógica de visualização
-    console.log("View student:", studentId);
+  const handleViewStudent = (student: StudentFullData) => {
+    // Redirecionar para página de detalhes ou abrir modal
+    console.log("View student:", student);
+    showSuccessToast(`Visualizando ${student.name}`);
   };
 
-  const handleDeleteStudent = (studentId: string) => {
-    // Aqui será implementada a lógica de exclusão
-    console.log("Delete student:", studentId);
+  const handleDeleteStudent = async (student: StudentFullData) => {
+    try {
+      const confirmed = await confirm({
+        title: "Excluir Aluno",
+        message: `Tem certeza que deseja excluir o aluno "${student.name}"? Esta ação não pode ser desfeita.`,
+        confirmText: "Excluir",
+        cancelText: "Cancelar",
+        type: "danger",
+      });
+
+      if (confirmed) {
+        setActionLoading(true);
+        const result = await deleteStudentAction(student.userId);
+
+        if (result.success) {
+          showSuccessToast(`Aluno "${student.name}" excluído com sucesso!`);
+          // Recarregar lista
+          const data = await getAllStudentsFullDataAction();
+          setStudents(data);
+        } else {
+          showErrorToast(result.error || "Erro ao excluir aluno");
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao excluir aluno:", error);
+      showErrorToast("Erro ao excluir aluno");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   return (
@@ -175,9 +224,7 @@ export function ManageStudentsView({ onBack }: ManageStudentsViewProps) {
               </div>
               <div>
                 <p className="text-sm text-gray-400">Total</p>
-                <p className="text-xl font-bold text-white">
-                  {mockStudents.length}
-                </p>
+                <p className="text-xl font-bold text-white">{stats.total}</p>
               </div>
             </div>
           </CardContent>
@@ -191,9 +238,7 @@ export function ManageStudentsView({ onBack }: ManageStudentsViewProps) {
               </div>
               <div>
                 <p className="text-sm text-gray-400">Ativos</p>
-                <p className="text-xl font-bold text-white">
-                  {mockStudents.filter((s) => s.status === "active").length}
-                </p>
+                <p className="text-xl font-bold text-white">{stats.active}</p>
               </div>
             </div>
           </CardContent>
@@ -207,9 +252,7 @@ export function ManageStudentsView({ onBack }: ManageStudentsViewProps) {
               </div>
               <div>
                 <p className="text-sm text-gray-400">Inativos</p>
-                <p className="text-xl font-bold text-white">
-                  {mockStudents.filter((s) => s.status === "inactive").length}
-                </p>
+                <p className="text-xl font-bold text-white">{stats.inactive}</p>
               </div>
             </div>
           </CardContent>
@@ -223,12 +266,7 @@ export function ManageStudentsView({ onBack }: ManageStudentsViewProps) {
               </div>
               <div>
                 <p className="text-sm text-gray-400">Pendentes</p>
-                <p className="text-xl font-bold text-white">
-                  {
-                    mockStudents.filter((s) => s.paymentStatus === "pending")
-                      .length
-                  }
-                </p>
+                <p className="text-xl font-bold text-white">{stats.pending}</p>
               </div>
             </div>
           </CardContent>
@@ -289,7 +327,11 @@ export function ManageStudentsView({ onBack }: ManageStudentsViewProps) {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {filteredStudents.length === 0 ? (
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-[#C2A537]" />
+              </div>
+            ) : filteredStudents.length === 0 ? (
               <div className="py-8 text-center">
                 <User className="mx-auto mb-4 h-12 w-12 text-gray-400" />
                 <h3 className="mb-2 text-lg font-semibold text-white">
@@ -302,7 +344,7 @@ export function ManageStudentsView({ onBack }: ManageStudentsViewProps) {
             ) : (
               filteredStudents.map((student) => (
                 <motion.div
-                  key={student.id}
+                  key={student.userId}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="rounded-lg border border-[#C2A537]/20 bg-black/30 p-4 transition-all duration-300 hover:bg-black/50"
@@ -318,14 +360,17 @@ export function ManageStudentsView({ onBack }: ManageStudentsViewProps) {
                           <h3 className="font-semibold text-white">
                             {student.name}
                           </h3>
-                          {getStatusBadge(student.status)}
-                          {getPaymentBadge(student.paymentStatus)}
+                          {getStatusBadge(student.isPaymentUpToDate)}
+                          {getPaymentBadge(
+                            student.paid,
+                            student.isPaymentUpToDate,
+                          )}
                         </div>
                         <div className="flex items-center space-x-4 text-sm text-gray-400">
                           <span>{student.email}</span>
                           <span>{student.cpf}</span>
-                          <span>{student.phone}</span>
-                          <span>{student.monthlyFee}</span>
+                          <span>{student.telephone}</span>
+                          <span>{student.formattedMonthlyFee}</span>
                         </div>
                       </div>
                     </div>
@@ -336,15 +381,16 @@ export function ManageStudentsView({ onBack }: ManageStudentsViewProps) {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleToggleStatus(student.id)}
+                        onClick={() => handleToggleStatus(student)}
                         className="text-gray-400 hover:text-white"
+                        disabled={actionLoading}
                         title={
-                          student.status === "active"
+                          student.isPaymentUpToDate
                             ? "Desativar aluno"
                             : "Ativar aluno"
                         }
                       >
-                        {student.status === "active" ? (
+                        {student.isPaymentUpToDate ? (
                           <ToggleRight className="h-5 w-5 text-green-400" />
                         ) : (
                           <ToggleLeft className="h-5 w-5 text-red-400" />
@@ -355,8 +401,9 @@ export function ManageStudentsView({ onBack }: ManageStudentsViewProps) {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleViewStudent(student.id)}
+                        onClick={() => handleViewStudent(student)}
                         className="text-gray-400 hover:text-white"
+                        disabled={actionLoading}
                         title="Ver detalhes"
                       >
                         <Eye className="h-4 w-4" />
@@ -366,8 +413,9 @@ export function ManageStudentsView({ onBack }: ManageStudentsViewProps) {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleEditStudent(student.id)}
+                        onClick={() => handleEditStudent(student)}
                         className="text-gray-400 hover:text-white"
+                        disabled={actionLoading}
                         title="Editar aluno"
                       >
                         <Edit className="h-4 w-4" />
@@ -377,21 +425,12 @@ export function ManageStudentsView({ onBack }: ManageStudentsViewProps) {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDeleteStudent(student.id)}
+                        onClick={() => handleDeleteStudent(student)}
                         className="text-gray-400 hover:text-red-400"
+                        disabled={actionLoading}
                         title="Excluir aluno"
                       >
                         <Trash2 className="h-4 w-4" />
-                      </Button>
-
-                      {/* More Options */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-gray-400 hover:text-white"
-                        title="Mais opções"
-                      >
-                        <MoreVertical className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
@@ -402,16 +441,34 @@ export function ManageStudentsView({ onBack }: ManageStudentsViewProps) {
         </CardContent>
       </Card>
 
-      {/* Action Buttons */}
-      <div className="flex justify-end space-x-4">
-        <Button
-          className="bg-[#C2A537] font-medium text-black hover:bg-[#B8A533]"
-          onClick={() => console.log("Add new student")}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Adicionar Novo Aluno
-        </Button>
-      </div>
+      {/* Modal de Edição */}
+      {studentToEdit && (
+        <EditStudentModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setStudentToEdit(null);
+          }}
+          student={studentToEdit}
+          onSuccess={async () => {
+            // Recarregar lista após edição
+            const data = await getAllStudentsFullDataAction();
+            setStudents(data);
+          }}
+        />
+      )}
+
+      {/* Dialog de confirmação */}
+      <ConfirmDialog
+        isOpen={isOpen}
+        onClose={handleCancel}
+        onConfirm={handleConfirm}
+        title={options.title}
+        message={options.message}
+        confirmText={options.confirmText}
+        cancelText={options.cancelText}
+        type={options.type}
+      />
     </motion.div>
   );
 }

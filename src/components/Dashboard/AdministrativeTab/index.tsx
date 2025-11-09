@@ -4,11 +4,16 @@ import {
   FileText,
   Save,
   Settings,
+  TrendingUp,
   UserPlus,
   Users,
 } from "lucide-react";
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 
+import {
+  DashboardStats,
+  getDashboardStatsAction,
+} from "@/actions/admin/get-dashboard-stats-action";
 import {
   createAlunoAction,
   FormState,
@@ -20,16 +25,51 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { formatCurrency } from "@/lib/payment-utils";
 
 export function AdministrativeTab() {
   const [showForm, setShowForm] = useState(false);
   const [showManageStudents, setShowManageStudents] = useState(false);
   const [showReports, setShowReports] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loadingStats, setLoadingStats] = useState(true);
   const [formState, formAction, isPending] = useActionState<
     FormState,
     FormData
   >(createAlunoAction, { success: false, message: "" });
+
+  // Carregar estatísticas ao montar o componente
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        setLoadingStats(true);
+        const result = await getDashboardStatsAction();
+        if (result.success && result.stats) {
+          setStats(result.stats);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar estatísticas:", error);
+      } finally {
+        setLoadingStats(false);
+      }
+    }
+
+    loadStats();
+  }, []);
+
+  // Recarregar estatísticas quando um aluno for cadastrado com sucesso
+  useEffect(() => {
+    if (formState.success) {
+      async function reloadStats() {
+        const result = await getDashboardStatsAction();
+        if (result.success && result.stats) {
+          setStats(result.stats);
+        }
+      }
+      reloadStats();
+    }
+  }, [formState.success]);
 
   const adminActions = [
     {
@@ -576,16 +616,6 @@ export function AdministrativeTab() {
 
   return (
     <div className="space-y-8">
-      {/* Cabeçalho */}
-      <div className="text-center">
-        <h2 className="mb-2 text-3xl font-bold text-[#C2A537]">
-          Painel Administrativo
-        </h2>
-        <p className="text-slate-400">
-          Gerencie alunos, relatórios e configurações da academia
-        </p>
-      </div>
-
       {/* Grid de Ações */}
       <div className="grid gap-6 md:grid-cols-2">
         {adminActions.map((action, index) => {
@@ -642,7 +672,13 @@ export function AdministrativeTab() {
               </div>
               <div>
                 <p className="text-sm text-slate-400">Total de Alunos</p>
-                <p className="text-xl font-bold text-white">--</p>
+                {loadingStats ? (
+                  <div className="h-7 w-12 animate-pulse rounded bg-slate-700" />
+                ) : (
+                  <p className="text-xl font-bold text-white">
+                    {stats?.totalStudents || 0}
+                  </p>
+                )}
               </div>
             </div>
           </CardContent>
@@ -656,7 +692,13 @@ export function AdministrativeTab() {
               </div>
               <div>
                 <p className="text-sm text-slate-400">Pagamentos em Dia</p>
-                <p className="text-xl font-bold text-white">--</p>
+                {loadingStats ? (
+                  <div className="h-7 w-12 animate-pulse rounded bg-slate-700" />
+                ) : (
+                  <p className="text-xl font-bold text-white">
+                    {stats?.paymentsUpToDate || 0}
+                  </p>
+                )}
               </div>
             </div>
           </CardContent>
@@ -670,7 +712,60 @@ export function AdministrativeTab() {
               </div>
               <div>
                 <p className="text-sm text-slate-400">Pendências</p>
-                <p className="text-xl font-bold text-white">--</p>
+                {loadingStats ? (
+                  <div className="h-7 w-12 animate-pulse rounded bg-slate-700" />
+                ) : (
+                  <p className="text-xl font-bold text-white">
+                    {stats?.pendingPayments || 0}
+                  </p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Cards Adicionais de Estatísticas */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card className="border-purple-500/50 bg-purple-900/20">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-500">
+                  <TrendingUp className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-400">Receita Mensal</p>
+                  {loadingStats ? (
+                    <div className="h-7 w-24 animate-pulse rounded bg-slate-700" />
+                  ) : (
+                    <p className="text-xl font-bold text-white">
+                      {formatCurrency(stats?.totalMonthlyRevenue || 0)}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-cyan-500/50 bg-cyan-900/20">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-500">
+                  <UserPlus className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-400">Novos este Mês</p>
+                  {loadingStats ? (
+                    <div className="h-7 w-12 animate-pulse rounded bg-slate-700" />
+                  ) : (
+                    <p className="text-xl font-bold text-white">
+                      {stats?.newStudentsThisMonth || 0}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </CardContent>

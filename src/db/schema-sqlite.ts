@@ -1,27 +1,25 @@
-import { relations } from "drizzle-orm";
-import {
-  boolean,
-  date,
-  integer,
-  pgTable,
-  text,
-  timestamp,
-  uuid,
-  varchar,
-} from "drizzle-orm/pg-core";
+import { relations, sql } from "drizzle-orm";
+import { int, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 import { UserRole } from "../types/user-roles";
 
-export const usersTable = pgTable("tb_users", {
-  id: uuid("id").primaryKey().defaultRandom(),
+// Helper para criar UUID
+const uuid = () => sql`(lower(hex(randomblob(16))))`;
+const now = () => sql`(datetime('now'))`;
+
+export const usersTable = sqliteTable("tb_users", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
   name: text("name").notNull(),
   userRole: text("user_role")
     .$type<UserRole>()
     .notNull()
     .default(UserRole.ALUNO),
-  password: text("password"), // Senha hash para admin e coaches
-  createdAt: date("created_at").notNull().defaultNow(),
-  deletedAt: timestamp("deleted_at"), // Soft delete
+  password: text("password"),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(datetime('now'))`),
 });
 
 export const usersRelations = relations(usersTable, ({ one, many }) => ({
@@ -40,15 +38,17 @@ export const usersRelations = relations(usersTable, ({ one, many }) => ({
   checkIns: many(checkInTable),
 }));
 
-export const personalDataTable = pgTable("tb_personal_data", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id")
+export const personalDataTable = sqliteTable("tb_personal_data", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id")
     .notNull()
     .unique()
     .references(() => usersTable.id),
-  cpf: varchar("cpf", { length: 11 }).notNull().unique(),
+  cpf: text("cpf", { length: 11 }).notNull().unique(),
   email: text("email").notNull().unique(),
-  bornDate: date("born_date").notNull(),
+  bornDate: text("born_date").notNull(),
   address: text("address").notNull(),
   telephone: text("telephone").notNull(),
 });
@@ -63,29 +63,35 @@ export const personalDataRelations = relations(
   }),
 );
 
-export const healthMetricsTable = pgTable("tb_health_metrics", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id")
+export const healthMetricsTable = sqliteTable("tb_health_metrics", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id")
     .notNull()
     .unique()
     .references(() => usersTable.id),
-  heightCm: varchar("height_cm", { length: 5 }).notNull(),
-  weightKg: varchar("weight_kg", { length: 5 }).notNull(),
-  bloodType: varchar("blood_type", { length: 3 }).notNull(),
-  hasPracticedSports: boolean("has_practiced_sports").notNull(),
+  heightCm: text("height_cm", { length: 5 }).notNull(),
+  weightKg: text("weight_kg", { length: 5 }).notNull(),
+  bloodType: text("blood_type", { length: 3 }).notNull(),
+  hasPracticedSports: integer("has_practiced_sports", {
+    mode: "boolean",
+  }).notNull(),
   lastExercise: text("last_exercise").notNull(),
   historyDiseases: text("history_diseases").notNull(),
   medications: text("medications").notNull(),
   sportsHistory: text("sports_history").notNull(),
   allergies: text("allergies").notNull(),
   injuries: text("injuries").notNull(),
-  updatedAt: date("updated_at").notNull().defaultNow(),
+  updatedAt: text("updated_at")
+    .notNull()
+    .default(sql`(datetime('now'))`),
   alimentalRoutine: text("alimental_routine").notNull(),
   diaryRoutine: text("diary_routine").notNull(),
-  useSupplements: boolean("use_supplements").notNull(),
+  useSupplements: integer("use_supplements", { mode: "boolean" }).notNull(),
   whatSupplements: text("what_supplements"),
   otherNotes: text("other_notes"),
-  coachaObservations: text("coach_observations"),
+  coachObservations: text("coach_observations"),
   coachObservationsParticular: text("coach_observations_particular"),
 });
 
@@ -99,18 +105,24 @@ export const healthMetricsRelations = relations(
   }),
 );
 
-export const financialTable = pgTable("tb_financial", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id")
+export const financialTable = sqliteTable("tb_financial", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id")
     .notNull()
     .references(() => usersTable.id),
   monthlyFeeValueInCents: integer("monthly_fee_value").notNull(),
-  paymentMethod: text("payment_method").notNull(), // 'dinheiro', 'pix', 'cartao_credito', 'cartao_debito', 'transferencia'
-  dueDate: integer("due_date").notNull(), // dia do mês (1-10)
-  paid: boolean("paid").notNull().default(false),
-  lastPaymentDate: date("last_payment_date"),
-  updatedAt: date("updated_at").notNull().defaultNow(),
-  createdAt: date("created_at").notNull().defaultNow(),
+  paymentMethod: text("payment_method").notNull(),
+  dueDate: integer("due_date").notNull(),
+  paid: integer("paid", { mode: "boolean" }).notNull().default(false),
+  lastPaymentDate: text("last_payment_date"),
+  updatedAt: text("updated_at")
+    .notNull()
+    .default(sql`(datetime('now'))`),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(datetime('now'))`),
 });
 
 export const financialRelations = relations(financialTable, ({ one }) => ({
@@ -120,17 +132,23 @@ export const financialRelations = relations(financialTable, ({ one }) => ({
   }),
 }));
 
-export const checkInTable = pgTable("tb_check_ins", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id")
+export const checkInTable = sqliteTable("tb_check_ins", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id")
     .notNull()
     .references(() => usersTable.id),
-  checkInDate: date("check_in_date").notNull(), // Data no formato YYYY-MM-DD
-  checkInTime: text("check_in_time").notNull(), // formato HH:MM
-  checkInTimestamp: timestamp("check_in_timestamp").notNull().defaultNow(), // Data e hora exata do check-in
-  method: text("method").notNull(), // 'cpf' ou 'email'
-  identifier: text("identifier").notNull(), // CPF ou email usado no check-in
-  createdAt: timestamp("created_at").notNull().defaultNow(),
+  checkInDate: text("check_in_date").notNull(),
+  checkInTime: text("check_in_time").notNull(),
+  checkInTimestamp: text("check_in_timestamp")
+    .notNull()
+    .default(sql`(datetime('now'))`),
+  method: text("method").notNull(),
+  identifier: text("identifier").notNull(),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(datetime('now'))`),
 });
 
 export const checkInRelations = relations(checkInTable, ({ one }) => ({
@@ -140,20 +158,23 @@ export const checkInRelations = relations(checkInTable, ({ one }) => ({
   }),
 }));
 
-// Tabela de histórico de observações do coach
-export const coachObservationsHistoryTable = pgTable(
+export const coachObservationsHistoryTable = sqliteTable(
   "tb_coach_observations_history",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    userId: uuid("user_id")
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
       .notNull()
       .references(() => usersTable.id),
-    professorId: uuid("professor_id")
+    professorId: text("professor_id")
       .notNull()
       .references(() => usersTable.id),
-    observationType: text("observation_type").notNull(), // 'general' ou 'particular'
+    observationType: text("observation_type").notNull(),
     observationText: text("observation_text").notNull(),
-    createdAt: date("created_at").notNull().defaultNow(),
+    createdAt: text("created_at")
+      .notNull()
+      .default(sql`(datetime('now'))`),
   },
 );
 
@@ -171,10 +192,8 @@ export const coachObservationsHistoryRelations = relations(
   }),
 );
 
-// Array de números de 1 a 10 para os dias de vencimento (limitado até 10º dia útil)
 export const dueDateOptions = Array.from({ length: 10 }, (_, i) => i + 1);
 
-// Opções de métodos de pagamento
 export const paymentMethodOptions = [
   { value: "dinheiro", label: "Dinheiro" },
   { value: "pix", label: "PIX" },
@@ -183,18 +202,21 @@ export const paymentMethodOptions = [
   { value: "transferencia", label: "Transferência Bancária" },
 ] as const;
 
-// Tabela para tokens de confirmação de usuários
-export const userConfirmationTokensTable = pgTable(
+export const userConfirmationTokensTable = sqliteTable(
   "tb_user_confirmation_tokens",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    userId: uuid("user_id")
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
       .notNull()
       .references(() => usersTable.id),
     token: text("token").notNull().unique(),
-    expiresAt: timestamp("expires_at").notNull(),
-    used: boolean("used").notNull().default(false),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
+    expiresAt: text("expires_at").notNull(),
+    used: integer("used", { mode: "boolean" }).notNull().default(false),
+    createdAt: text("created_at")
+      .notNull()
+      .default(sql`(datetime('now'))`),
   },
 );
 
@@ -208,18 +230,26 @@ export const userConfirmationTokensRelations = relations(
   }),
 );
 
-// Tabela para histórico de saúde do aluno (atualizações feitas pelo próprio aluno)
-export const studentHealthHistoryTable = pgTable("tb_student_health_history", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => usersTable.id),
-  heightCm: integer("height_cm"),
-  weightKg: text("weight_kg"), // Permite decimais como string
-  notes: text("notes"), // Observações do aluno sobre sua saúde
-  updatedAt: date("updated_at").notNull().defaultNow(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+export const studentHealthHistoryTable = sqliteTable(
+  "tb_student_health_history",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => usersTable.id),
+    heightCm: integer("height_cm"),
+    weightKg: text("weight_kg"),
+    notes: text("notes"),
+    updatedAt: text("updated_at")
+      .notNull()
+      .default(sql`(datetime('now'))`),
+    createdAt: text("created_at")
+      .notNull()
+      .default(sql`(datetime('now'))`),
+  },
+);
 
 export const studentHealthHistoryRelations = relations(
   studentHealthHistoryTable,
@@ -231,75 +261,73 @@ export const studentHealthHistoryRelations = relations(
   }),
 );
 
-// Tabela para posts do blog
-export const posts = pgTable("tb_posts", {
-  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+export const posts = sqliteTable("tb_posts", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   title: text("title").notNull(),
   content: text("content").notNull(),
   excerpt: text("excerpt").notNull(),
   imageUrl: text("image_url"),
-  published: boolean("published").notNull().default(false),
+  published: integer("published", { mode: "boolean" }).notNull().default(false),
   authorId: integer("author_id").notNull(),
   categoryId: integer("category_id").references(() => categories.id),
   metaTitle: text("meta_title"),
   metaDescription: text("meta_description"),
   metaKeywords: text("meta_keywords"),
   slug: text("slug").notNull().unique(),
-  readTime: integer("read_time"), // tempo de leitura em minutos
+  readTime: integer("read_time"),
   views: integer("views").notNull().default(0),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(datetime('now'))`),
+  updatedAt: text("updated_at")
+    .notNull()
+    .default(sql`(datetime('now'))`),
 });
 
-// Tabela para categorias dos posts
-export const categories = pgTable("tb_categories", {
-  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+export const categories = sqliteTable("tb_categories", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull().unique(),
   slug: text("slug").notNull().unique(),
   description: text("description"),
-  color: text("color").notNull().default("#64748b"), // cor hex para UI
-  createdAt: timestamp("created_at").notNull().defaultNow(),
+  color: text("color").notNull().default("#64748b"),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(datetime('now'))`),
 });
 
-// Tabela para tags
-export const tags = pgTable("tb_tags", {
-  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+export const tags = sqliteTable("tb_tags", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull().unique(),
   slug: text("slug").notNull().unique(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(datetime('now'))`),
 });
 
-// Tabela de relacionamento entre posts e tags (many-to-many)
-export const postTags = pgTable(
-  "tb_post_tags",
-  {
-    postId: integer("post_id")
-      .notNull()
-      .references(() => posts.id, { onDelete: "cascade" }),
-    tagId: integer("tag_id")
-      .notNull()
-      .references(() => tags.id, { onDelete: "cascade" }),
-  },
-  (table) => ({
-    pk: { primaryKey: [table.postId, table.tagId] },
-  }),
-);
-
-// Tabela para comentários dos posts
-export const comments = pgTable("tb_comments", {
-  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+export const postTags = sqliteTable("tb_post_tags", {
   postId: integer("post_id")
     .notNull()
     .references(() => posts.id, { onDelete: "cascade" }),
-  parentId: integer("parent_id"), // para respostas - referência adicionada nas relations
+  tagId: integer("tag_id")
+    .notNull()
+    .references(() => tags.id, { onDelete: "cascade" }),
+});
+
+export const comments = sqliteTable("tb_comments", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  postId: integer("post_id")
+    .notNull()
+    .references(() => posts.id, { onDelete: "cascade" }),
+  parentId: integer("parent_id"),
   authorName: text("author_name").notNull(),
   authorEmail: text("author_email").notNull(),
   content: text("content").notNull(),
-  approved: boolean("approved").notNull().default(false),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
+  approved: integer("approved", { mode: "boolean" }).notNull().default(false),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(datetime('now'))`),
 });
 
-// Relations
 export const postsRelations = relations(posts, ({ one, many }) => ({
   category: one(categories, {
     fields: [posts.categoryId],

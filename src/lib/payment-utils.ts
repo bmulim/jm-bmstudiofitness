@@ -105,3 +105,48 @@ export function formatCurrency(valueInCents: number): string {
 export function convertToCents(valueInReais: number): number {
   return Math.round(valueInReais * 100);
 }
+
+/**
+ * Calcula quantos dias de atraso o usuário tem no pagamento
+ * @param dueDate Dia do mês para vencimento (1-10)
+ * @param lastPaymentDate Data do último pagamento
+ * @param paid Status de pagamento atual
+ * @returns Número de dias em atraso (0 se estiver em dia)
+ */
+export function getPaymentDelayDays(
+  dueDate: number,
+  lastPaymentDate: string | null,
+  paid: boolean,
+): number {
+  if (paid && lastPaymentDate) {
+    const lastPayment = new Date(lastPaymentDate);
+    const today = new Date();
+
+    // Se pagou neste mês, não há atraso
+    if (
+      lastPayment.getMonth() === today.getMonth() &&
+      lastPayment.getFullYear() === today.getFullYear()
+    ) {
+      return 0;
+    }
+  }
+
+  const today = new Date();
+  const currentDay = today.getDate();
+  const currentMonth = today.getMonth();
+  const currentYear = today.getFullYear();
+
+  // Data de vencimento neste mês
+  const dueThisMonth = new Date(currentYear, currentMonth, dueDate);
+
+  // Se ainda não passou do vencimento, não há atraso
+  if (currentDay <= dueDate) {
+    return 0;
+  }
+
+  // Calcular dias de atraso
+  const diffTime = today.getTime() - dueThisMonth.getTime();
+  const delayDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  return delayDays;
+}
