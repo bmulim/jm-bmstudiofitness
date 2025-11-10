@@ -6,19 +6,20 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
-import { useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 
 import { getFinancialReportsAction } from "@/actions/admin/get-financial-reports-action";
 import { getPaymentDueDatesAction } from "@/actions/admin/get-payment-due-dates-action";
+import { ExpenseForm, ExpenseTable } from "@/components/Admin/ExpenseManager";
 import { FinancialDashboardView } from "@/components/Dashboard/FinancialDashboardView";
 import { PaymentManagementView } from "@/components/Dashboard/PaymentManagementView";
 import { ReportsView } from "@/components/Dashboard/ReportsView";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function FinancialTab() {
-  const [showFinancialReports, setShowFinancialReports] = useState(false);
-  const [showPaymentManagement, setShowPaymentManagement] = useState(false);
-  const [showFinancialDashboard, setShowFinancialDashboard] = useState(false);
+  const [activeView, setActiveView] = useState<
+    "main" | "reports" | "payments" | "dashboard" | "expenses"
+  >("main");
   const [overview, setOverview] = useState({
     totalRevenue: "R$ 0,00",
     activeStudents: 0,
@@ -66,19 +67,36 @@ export function FinancialTab() {
     }
   };
 
-  if (showFinancialReports) {
-    return <ReportsView onBack={() => setShowFinancialReports(false)} />;
+  if (activeView === "reports") {
+    return <ReportsView onBack={() => setActiveView("main")} />;
   }
 
-  if (showPaymentManagement) {
-    return (
-      <PaymentManagementView onBack={() => setShowPaymentManagement(false)} />
-    );
+  if (activeView === "payments") {
+    return <PaymentManagementView onBack={() => setActiveView("main")} />;
   }
 
-  if (showFinancialDashboard) {
+  if (activeView === "dashboard") {
+    return <FinancialDashboardView onBack={() => setActiveView("main")} />;
+  }
+
+  if (activeView === "expenses") {
     return (
-      <FinancialDashboardView onBack={() => setShowFinancialDashboard(false)} />
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-white">
+            Gerenciamento de Despesas
+          </h2>
+          <button
+            onClick={() => setActiveView("main")}
+            className="text-slate-400 hover:text-white"
+          >
+            Voltar
+          </button>
+        </div>
+        <ExpenseForm />
+        <ExpenseTable expenses={[]} />{" "}
+        {/* TODO: Implementar carregamento das despesas */}
+      </div>
     );
   }
   return (
@@ -151,7 +169,7 @@ export function FinancialTab() {
         {/* Relatórios */}
         <Card
           className="cursor-pointer border-slate-700/50 bg-slate-800/30 transition-all duration-200 hover:border-[#C2A537]/50 hover:bg-slate-800/50"
-          onClick={() => setShowFinancialReports(true)}
+          onClick={() => setActiveView("reports")}
         >
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-[#C2A537]">
@@ -207,7 +225,7 @@ export function FinancialTab() {
         {/* Gestão de Pagamentos */}
         <Card
           className="cursor-pointer border-slate-700/50 bg-slate-800/30 transition-all duration-200 hover:border-[#C2A537]/50 hover:bg-slate-800/50"
-          onClick={() => setShowPaymentManagement(true)}
+          onClick={() => setActiveView("payments")}
         >
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-[#C2A537]">
@@ -261,10 +279,60 @@ export function FinancialTab() {
         </Card>
       </div>
 
+      {/* Gerenciamento de Despesas */}
+      <Card
+        className="cursor-pointer border-slate-700/50 bg-slate-800/30 transition-all duration-200 hover:border-[#C2A537]/50 hover:bg-slate-800/50"
+        onClick={() => setActiveView("expenses")}
+      >
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-[#C2A537]">
+            <TrendingDown className="h-5 w-5" />
+            Gestão de Despesas
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between rounded-lg border border-slate-600 bg-slate-700/50 p-4">
+              <div>
+                <h4 className="font-medium text-white">Despesas Fixas</h4>
+                <p className="text-sm text-slate-400">
+                  Aluguel, energia, água, etc.
+                </p>
+              </div>
+              <div className="rounded bg-[#C2A537]/20 px-3 py-1 text-xs text-[#C2A537]">
+                Disponível
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border border-slate-600 bg-slate-700/50 p-4">
+              <div>
+                <h4 className="font-medium text-white">Despesas Variáveis</h4>
+                <p className="text-sm text-slate-400">
+                  Manutenção, materiais, etc.
+                </p>
+              </div>
+              <div className="rounded bg-[#C2A537]/20 px-3 py-1 text-xs text-[#C2A537]">
+                Disponível
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border border-slate-600 bg-slate-700/50 p-4">
+              <div>
+                <h4 className="font-medium text-white">Relatórios</h4>
+                <p className="text-sm text-slate-400">Análise de custos</p>
+              </div>
+              <div className="rounded bg-[#C2A537]/20 px-3 py-1 text-xs text-[#C2A537]">
+                Disponível
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Dashboard de Acompanhamento */}
       <Card
         className="cursor-pointer border-slate-700/50 bg-slate-800/30 transition-all duration-200 hover:border-[#C2A537]/50 hover:bg-slate-800/50"
-        onClick={() => setShowFinancialDashboard(true)}
+        onClick={() => setActiveView("dashboard")}
       >
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-[#C2A537]">

@@ -79,6 +79,23 @@ export function extractToken(request: NextRequest): string | null {
   return null;
 }
 
+// Verifica se o usuário é um administrador
+export async function adminGuard() {
+  const cookieStore = await (await import("next/headers")).cookies();
+  const authToken = cookieStore.get("auth-token")?.value;
+
+  if (!authToken) {
+    throw new Error("Não autorizado");
+  }
+
+  const payload = verifyToken(authToken);
+  if (!payload || payload.role !== UserRole.ADMIN) {
+    throw new Error("Acesso restrito a administradores");
+  }
+
+  return true;
+}
+
 // Extrair usuário do request
 export function getUserFromRequest(request: NextRequest): {
   role: UserRole;

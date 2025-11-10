@@ -10,6 +10,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 
+import { ExpenseCategory } from "../types/expense-categories";
 import { UserRole } from "../types/user-roles";
 
 export const usersTable = pgTable("tb_users", {
@@ -341,6 +342,36 @@ export const commentsRelations = relations(comments, ({ one, many }) => ({
 }));
 
 // Tabela para configurações do estúdio
+// Tabela para despesas do estúdio
+export const studioExpensesTable = pgTable("tb_studio_expenses", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  description: text("description").notNull(),
+  category: text("category").$type<ExpenseCategory>().notNull(),
+  amountInCents: integer("amount_in_cents").notNull(), // Valor em centavos
+  dueDate: date("due_date").notNull(),
+  paid: boolean("paid").notNull().default(false),
+  paymentDate: date("payment_date"),
+  paymentMethod: text("payment_method").notNull(), // Usando as mesmas opções de paymentMethodOptions
+  recurrent: boolean("recurrent").notNull().default(false), // Se é uma despesa recorrente mensal
+  notes: text("notes"),
+  attachment: text("attachment"), // URL para comprovante/nota fiscal
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  createdBy: uuid("created_by")
+    .notNull()
+    .references(() => usersTable.id),
+});
+
+export const studioExpensesRelations = relations(
+  studioExpensesTable,
+  ({ one }) => ({
+    createdByUser: one(usersTable, {
+      fields: [studioExpensesTable.createdBy],
+      references: [usersTable.id],
+    }),
+  }),
+);
+
 export const studioSettingsTable = pgTable("tb_studio_settings", {
   id: uuid("id").primaryKey().defaultRandom(),
   // Informações básicas
