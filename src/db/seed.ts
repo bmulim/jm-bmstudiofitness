@@ -7,10 +7,13 @@ import { UserRole } from "../types/user-roles";
 import {
   categories,
   checkInTable,
+  employeesTable,
+  employeeTimeRecordsTable,
   financialTable,
   healthMetricsTable,
   personalDataTable,
   posts,
+  studioExpensesTable,
   userConfirmationTokensTable,
   usersTable,
 } from "./schema";
@@ -25,6 +28,9 @@ async function main() {
   await db.delete(checkInTable);
   await db.delete(financialTable);
   await db.delete(healthMetricsTable);
+  await db.delete(employeeTimeRecordsTable);
+  await db.delete(employeesTable);
+  await db.delete(studioExpensesTable);
   await db.delete(personalDataTable);
   await db.delete(posts);
   await db.delete(categories);
@@ -96,6 +102,7 @@ async function main() {
       userId: admin.id,
       cpf: "11111111111",
       email: "julianamartins@jmfitnessstudio.com.br",
+      sex: "feminino",
       bornDate: "1985-05-20",
       address: "Rua Administração, 1 - São Paulo/SP",
       telephone: "+55 11 99999-0001",
@@ -104,14 +111,25 @@ async function main() {
       userId: professor.id,
       cpf: "22222222222",
       email: "maria.professor@jmfitness.com",
+      sex: "feminino",
       bornDate: "1990-03-15",
       address: "Rua dos Professores, 200 - São Paulo/SP",
       telephone: "+55 11 99999-0002",
     },
     {
+      userId: funcionario.id,
+      cpf: "33333333333",
+      email: "carlos.silva@jmfitnessstudio.com.br",
+      sex: "masculino",
+      bornDate: "1988-08-12",
+      address: "Rua dos Funcionários, 150 - São Paulo/SP",
+      telephone: "+55 11 99999-0003",
+    },
+    {
       userId: ana.id,
       cpf: "12345678901",
       email: "ana.costa@email.com",
+      sex: "feminino",
       bornDate: "1996-02-14",
       address: "Rua das Flores, 100 - São Paulo/SP",
       telephone: "+55 11 98888-0001",
@@ -120,6 +138,7 @@ async function main() {
       userId: bruno.id,
       cpf: "23456789012",
       email: "bruno.lima@email.com",
+      sex: "masculino",
       bornDate: "1992-10-03",
       address: "Rua dos Atletas, 200 - São Paulo/SP",
       telephone: "+55 11 98888-0002",
@@ -128,6 +147,7 @@ async function main() {
       userId: carla.id,
       cpf: "34567890123",
       email: "carla.mendes@email.com",
+      sex: "feminino",
       bornDate: "1989-07-20",
       address: "Rua da Saúde, 300 - São Paulo/SP",
       telephone: "+55 11 98888-0003",
@@ -136,13 +156,82 @@ async function main() {
       userId: daniel.id,
       cpf: "45678901234",
       email: "daniel.oliveira@email.com",
+      sex: "masculino",
       bornDate: "1995-12-08",
       address: "Rua do Fitness, 400 - São Paulo/SP",
       telephone: "+55 11 98888-0004",
     },
   ]);
 
-  // 3) Métricas de saúde apenas para alunos
+  // 3) Dados de funcionário (para Carlos Silva)
+  const [employeeRecord] = await db
+    .insert(employeesTable)
+    .values([
+      {
+        userId: funcionario.id,
+        position: "Recepcionista",
+        shift: "integral",
+        shiftStartTime: "08:00",
+        shiftEndTime: "18:00",
+        salaryInCents: 280000, // R$ 2.800,00
+        hireDate: "2025-02-15",
+        createdAt: new Date("2025-02-15"),
+        updatedAt: new Date("2025-02-15"),
+      },
+    ])
+    .returning();
+
+  // 3.1) Registros de ponto do funcionário (últimos 30 dias)
+  const timeRecords = [];
+  const today = new Date();
+
+  // Gerar registros para os últimos 30 dias (exceto fins de semana)
+  for (let i = 29; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+
+    // Pular sábados (6) e domingos (0)
+    const dayOfWeek = date.getDay();
+    if (dayOfWeek === 0 || dayOfWeek === 6) continue;
+
+    const dateStr = date.toISOString().split("T")[0];
+
+    // Variação nos horários para parecer mais real
+    const checkInVariation = Math.floor(Math.random() * 30) - 15; // -15 a +15 minutos
+    const checkOutVariation = Math.floor(Math.random() * 30) - 15;
+
+    const checkInHour = 8;
+    const checkInMinute = Math.max(0, Math.min(59, checkInVariation));
+    const checkInTime = `${checkInHour.toString().padStart(2, "0")}:${Math.abs(checkInMinute).toString().padStart(2, "0")}`;
+
+    const checkOutHour = 18;
+    const checkOutMinute = Math.max(0, Math.min(59, checkOutVariation));
+    const checkOutTime = `${checkOutHour.toString().padStart(2, "0")}:${Math.abs(checkOutMinute).toString().padStart(2, "0")}`;
+
+    // Calcular total de horas
+    const totalMinutes =
+      checkOutHour * 60 +
+      Math.abs(checkOutMinute) -
+      (checkInHour * 60 + Math.abs(checkInMinute));
+    const totalHours = Math.floor(totalMinutes / 60);
+    const totalMins = totalMinutes % 60;
+    const totalHoursStr = `${totalHours}:${totalMins.toString().padStart(2, "0")}`;
+
+    timeRecords.push({
+      employeeId: employeeRecord.id,
+      date: dateStr,
+      checkInTime,
+      checkOutTime,
+      totalHours: totalHoursStr,
+      notes: i < 3 ? null : Math.random() > 0.9 ? "Horário normal" : null,
+      approved: i >= 7, // Últimos 7 dias ainda não aprovados
+      approvedBy: i >= 7 ? admin.id : null,
+    });
+  }
+
+  await db.insert(employeeTimeRecordsTable).values(timeRecords);
+
+  // 4) Métricas de saúde apenas para alunos
   await db.insert(healthMetricsTable).values([
     {
       userId: ana.id,
@@ -222,7 +311,7 @@ async function main() {
     },
   ]);
 
-  // 4) Dados financeiros apenas para alunos - incluindo paymentMethod obrigatório
+  // 5) Dados financeiros apenas para alunos - incluindo paymentMethod obrigatório
   await db.insert(financialTable).values([
     {
       userId: ana.id,
@@ -266,7 +355,7 @@ async function main() {
     },
   ]);
 
-  // 5) Check-ins diversos para simular frequência
+  // 6) Check-ins diversos para simular frequência
   const checkInsData = [
     // Ana - manhã
     {
@@ -415,7 +504,7 @@ async function main() {
 
   await db.insert(checkInTable).values(checkInsData);
 
-  // 8) Criar categorias para o blog
+  // 7) Criar categorias para o blog
   const blogCategories = await db
     .insert(categories)
     .values([
@@ -448,7 +537,7 @@ async function main() {
 
   const [treino, nutricao, motivacao, novidades] = blogCategories;
 
-  // 9) Criar posts para o blog
+  // 8) Criar posts para o blog
   const blogPosts = [
     {
       title: "Benefícios do Treino Funcional para Iniciantes",
@@ -871,6 +960,7 @@ Venha conhecer as novidades e descubra como podemos potencializar ainda mais seu
   console.log("📊 Dados criados:");
   console.log(`  - 1 Administrador: ${admin.name}`);
   console.log(`  - 1 Professor: ${professor.name}`);
+  console.log(`  - 1 Funcionário: ${funcionario.name} (Recepcionista)`);
   console.log(
     `  - 4 Alunos: ${ana.name}, ${bruno.name}, ${carla.name}, ${daniel.name}`,
   );
@@ -883,6 +973,9 @@ Venha conhecer as novidades e descubra como podemos potencializar ainda mais seu
   console.log("  - Métricas de saúde completas para todos os alunos");
   console.log(
     `  - ${blogPosts.length} posts para o blog (4 publicados, 1 rascunho)`,
+  );
+  console.log(
+    `  - ${timeRecords.length} registros de ponto do funcionário (últimos 30 dias úteis)`,
   );
 }
 

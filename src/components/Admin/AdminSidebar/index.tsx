@@ -8,6 +8,7 @@ import {
   Menu,
   Shield,
   Users,
+  UserCog,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -46,6 +47,13 @@ const menuItems: SidebarItem[] = [
     icon: Shield,
     href: "/admin/dashboard?tab=users",
     description: "Gerenciar usuários",
+  },
+  {
+    id: "employee",
+    label: "Funcionários",
+    icon: UserCog,
+    href: "/admin/dashboard?tab=employee",
+    description: "Gerenciar funcionários",
   },
   {
     id: "financial",

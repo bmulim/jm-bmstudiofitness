@@ -120,6 +120,7 @@ export async function createUserAction(
       await db.insert(personalDataTable).values({
         userId: createdUser.id,
         email: data.email.trim(),
+        sex: data.sex || "masculino",
         cpf: data.cpf ? data.cpf.replace(/\D/g, "") : "",
         telephone: data.telephone || "",
         address: data.address || "",

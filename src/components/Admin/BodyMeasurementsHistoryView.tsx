@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 import {
   Table,
   TableBody,
@@ -38,9 +39,11 @@ type DbMeasurement = {
   createdAt: string;
   measuredBy: string | null;
   notes: string | null;
-}
+};
 
-export function BodyMeasurementsHistoryView({ userId }: BodyMeasurementsHistoryViewProps) {
+export function BodyMeasurementsHistoryView({
+  userId,
+}: BodyMeasurementsHistoryViewProps) {
   const [measurements, setMeasurements] = useState<DbMeasurement[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -52,7 +55,9 @@ export function BodyMeasurementsHistoryView({ userId }: BodyMeasurementsHistoryV
           return;
         }
 
-        const res = await fetch(`/api/admin/body-measurements?userId=${encodeURIComponent(userId)}`);
+        const res = await fetch(
+          `/api/admin/body-measurements?userId=${encodeURIComponent(userId)}`,
+        );
         const json = await res.json();
         if (json.success && Array.isArray(json.measurements)) {
           setMeasurements(json.measurements as DbMeasurement[]);
@@ -87,7 +92,9 @@ export function BodyMeasurementsHistoryView({ userId }: BodyMeasurementsHistoryV
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-[#C2A537]">Histórico de Medições</h3>
+      <h3 className="text-lg font-semibold text-[#C2A537]">
+        Histórico de Medições
+      </h3>
       <div className="rounded-lg border border-slate-700 bg-slate-800/50">
         <Table>
           <TableHeader>
@@ -106,17 +113,19 @@ export function BodyMeasurementsHistoryView({ userId }: BodyMeasurementsHistoryV
               const weightKg = parseFloat(measurement.weightKg);
               const heightCm = parseFloat(measurement.heightCm);
               const imc = weightKg / Math.pow(heightCm / 100, 2);
-              const bodyFatPercentage = measurement.bodyFatPercentage ? parseFloat(measurement.bodyFatPercentage) : null;
+              const bodyFatPercentage = measurement.bodyFatPercentage
+                ? parseFloat(measurement.bodyFatPercentage)
+                : null;
 
               return (
                 <TableRow key={measurement.id}>
-                  <TableCell>
-                    {date.toLocaleDateString("pt-BR")}
-                  </TableCell>
+                  <TableCell>{date.toLocaleDateString("pt-BR")}</TableCell>
                   <TableCell>{weightKg.toFixed(1)}</TableCell>
                   <TableCell>{heightCm.toFixed(1)}</TableCell>
                   <TableCell>
-                    {bodyFatPercentage !== null ? `${bodyFatPercentage.toFixed(1)}%` : "-"}
+                    {bodyFatPercentage !== null
+                      ? `${bodyFatPercentage.toFixed(1)}%`
+                      : "-"}
                   </TableCell>
                   <TableCell>{imc.toFixed(1)}</TableCell>
                   <TableCell>{measurement.notes || "-"}</TableCell>

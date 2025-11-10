@@ -10,7 +10,7 @@ import {
   Users,
 } from "lucide-react";
 import { useActionState, useEffect, useState } from "react";
-
+import { toast } from "sonner";
 
 import {
   DashboardStats,
@@ -55,33 +55,55 @@ export function AdministrativeTab({ user }: AdministrativeTabProps) {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
   const [calculatedAge, setCalculatedAge] = useState<number | null>(null);
-  const [bodyFatPercentage, setBodyFatPercentage] = useState<number | null>(null);
+  const [bodyFatPercentage, setBodyFatPercentage] = useState<number | null>(
+    null,
+  );
   const [selectedGender, setSelectedGender] = useState<string>("");
-  const [currentStudentId, setCurrentStudentId] = useState<string | null>(null);
 
-  const calculateBodyFat = async (gender: string, age: number, fold1: number, fold2: number, fold3: number) => {
+  const calculateBodyFat = async (
+    gender: string,
+    age: number,
+    fold1: number,
+    fold2: number,
+    fold3: number,
+  ) => {
     const sumFolds = fold1 + fold2 + fold3;
     let dc;
 
     if (gender === "feminino") {
       // Fórmula para mulheres (tríceps, suprailíaca e coxa)
-      dc = 1.099421 - (0.0009928 * sumFolds) + (0.0000023 * Math.pow(sumFolds, 2)) - (0.0001392 * age);
+      dc =
+        1.099421 -
+        0.0009928 * sumFolds +
+        0.0000023 * Math.pow(sumFolds, 2) -
+        0.0001392 * age;
     } else {
       // Fórmula para homens (peitoral, abdominal e coxa)
-      dc = 1.10938 - (0.0008267 * sumFolds) + (0.0000016 * Math.pow(sumFolds, 2)) - (0.0002574 * age);
+      dc =
+        1.10938 -
+        0.0008267 * sumFolds +
+        0.0000016 * Math.pow(sumFolds, 2) -
+        0.0002574 * age;
     }
 
     // Fórmula de Siri para percentual de gordura
-    const fatPercentage = (495 / dc) - 450;
+    const fatPercentage = 495 / dc - 450;
     const bodyFatValue = Number(fatPercentage.toFixed(2));
     setBodyFatPercentage(bodyFatValue);
 
     // Salva os dados via API somente se tivermos um userId (edição de aluno)
-    const studentIdElement = typeof document !== "undefined" ? (document.getElementById("studentId") as HTMLInputElement | null) : null;
+    const studentIdElement =
+      typeof document !== "undefined"
+        ? (document.getElementById("studentId") as HTMLInputElement | null)
+        : null;
     const studentId = studentIdElement?.value || null;
 
-    const weightValue = parseFloat((document.getElementById("weightKg") as HTMLInputElement)?.value || "0");
-    const heightValue = parseFloat((document.getElementById("heightCm") as HTMLInputElement)?.value || "0");
+    const weightValue = parseFloat(
+      (document.getElementById("weightKg") as HTMLInputElement)?.value || "0",
+    );
+    const heightValue = parseFloat(
+      (document.getElementById("heightCm") as HTMLInputElement)?.value || "0",
+    );
 
     const measurementData: Record<string, unknown> = {
       userId: studentId,
@@ -93,9 +115,18 @@ export function AdministrativeTab({ user }: AdministrativeTabProps) {
     };
 
     if (gender === "feminino") {
-      const tricepsValue = parseFloat((document.getElementById("tricepsFold") as HTMLInputElement)?.value || "0");
-      const suprailiacValue = parseFloat((document.getElementById("suprailiacFold") as HTMLInputElement)?.value || "0");
-      const thighValue = parseFloat((document.getElementById("thighFold") as HTMLInputElement)?.value || "0");
+      const tricepsValue = parseFloat(
+        (document.getElementById("tricepsFold") as HTMLInputElement)?.value ||
+          "0",
+      );
+      const suprailiacValue = parseFloat(
+        (document.getElementById("suprailiacFold") as HTMLInputElement)
+          ?.value || "0",
+      );
+      const thighValue = parseFloat(
+        (document.getElementById("thighFold") as HTMLInputElement)?.value ||
+          "0",
+      );
 
       Object.assign(measurementData, {
         tricepsSkinfoldMm: isNaN(tricepsValue) ? null : tricepsValue,
@@ -103,9 +134,18 @@ export function AdministrativeTab({ user }: AdministrativeTabProps) {
         thighSkinfoldMm: isNaN(thighValue) ? null : thighValue,
       });
     } else {
-      const chestValue = parseFloat((document.getElementById("chestFold") as HTMLInputElement)?.value || "0");
-      const abdominalValue = parseFloat((document.getElementById("abdominalFold") as HTMLInputElement)?.value || "0");
-      const thighValue = parseFloat((document.getElementById("thighFold") as HTMLInputElement)?.value || "0");
+      const chestValue = parseFloat(
+        (document.getElementById("chestFold") as HTMLInputElement)?.value ||
+          "0",
+      );
+      const abdominalValue = parseFloat(
+        (document.getElementById("abdominalFold") as HTMLInputElement)?.value ||
+          "0",
+      );
+      const thighValue = parseFloat(
+        (document.getElementById("thighFold") as HTMLInputElement)?.value ||
+          "0",
+      );
 
       Object.assign(measurementData, {
         chestSkinfoldMm: isNaN(chestValue) ? null : chestValue,
@@ -121,8 +161,10 @@ export function AdministrativeTab({ user }: AdministrativeTabProps) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(measurementData),
         });
+        toast.success("Medições salvas com sucesso");
       } catch (error) {
         console.error("Error saving body measurements via API:", error);
+        toast.error("Erro ao salvar medições");
       }
     } else {
       // Sem userId (novo cadastro) — salvará apenas quando o aluno existir
@@ -146,7 +188,6 @@ export function AdministrativeTab({ user }: AdministrativeTabProps) {
   const [showUpToDateModal, setShowUpToDateModal] = useState(false);
   const [showOverdueModal, setShowOverdueModal] = useState(false);
   const [studentsData, setStudentsData] = useState<StudentPaymentData[]>([]);
-  const [updating, setUpdating] = useState<string | null>(null);
   const [isLoadingStudents, setIsLoadingStudents] = useState(false);
   const [formState, formAction, isPending] = useActionState<
     FormState,
@@ -154,18 +195,6 @@ export function AdministrativeTab({ user }: AdministrativeTabProps) {
   >(createAlunoAction, { success: false, message: "" });
 
   const [showCredentialsModal, setShowCredentialsModal] = useState(false);
-
-  const loadStudentsData = async () => {
-    try {
-      setIsLoadingStudents(true);
-      const data = await getStudentsPaymentsAction();
-      setStudentsData(data.filter((student) => student.isUpToDate));
-    } catch (error) {
-      console.error("Erro ao carregar dados dos alunos:", error);
-    } finally {
-      setIsLoadingStudents(false);
-    }
-  };
 
   // Carregar estatísticas ao montar o componente
   useEffect(() => {
@@ -202,14 +231,21 @@ export function AdministrativeTab({ user }: AdministrativeTabProps) {
         setShowCredentialsModal(true);
       }
       // Se o servidor retornou o id do usuário criado, salvar as medições enviadas no formulário
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if ((formState as any).createdUserId) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const newUserId = (formState as any).createdUserId as string;
-        setCurrentStudentId(newUserId);
         // Salvar medições que o treinador já tenha preenchido no formulário
         const saveMeasurementsForUser = async (userId: string) => {
           try {
-            const weightValue = parseFloat((document.getElementById("weightKg") as HTMLInputElement)?.value || "0");
-            const heightValue = parseFloat((document.getElementById("heightCm") as HTMLInputElement)?.value || "0");
+            const weightValue = parseFloat(
+              (document.getElementById("weightKg") as HTMLInputElement)
+                ?.value || "0",
+            );
+            const heightValue = parseFloat(
+              (document.getElementById("heightCm") as HTMLInputElement)
+                ?.value || "0",
+            );
 
             const payload: Record<string, unknown> = {
               userId,
@@ -221,13 +257,40 @@ export function AdministrativeTab({ user }: AdministrativeTabProps) {
             };
 
             if (selectedGender === "feminino") {
-              payload.tricepsSkinfoldMm = parseFloat((document.getElementById("tricepsFold") as HTMLInputElement)?.value || "0") || null;
-              payload.suprailiacSkinfoldMm = parseFloat((document.getElementById("suprailiacFold") as HTMLInputElement)?.value || "0") || null;
-              payload.thighSkinfoldMm = parseFloat((document.getElementById("thighFold") as HTMLInputElement)?.value || "0") || null;
+              payload.tricepsSkinfoldMm =
+                parseFloat(
+                  (document.getElementById("tricepsFold") as HTMLInputElement)
+                    ?.value || "0",
+                ) || null;
+              payload.suprailiacSkinfoldMm =
+                parseFloat(
+                  (
+                    document.getElementById(
+                      "suprailiacFold",
+                    ) as HTMLInputElement
+                  )?.value || "0",
+                ) || null;
+              payload.thighSkinfoldMm =
+                parseFloat(
+                  (document.getElementById("thighFold") as HTMLInputElement)
+                    ?.value || "0",
+                ) || null;
             } else {
-              payload.chestSkinfoldMm = parseFloat((document.getElementById("chestFold") as HTMLInputElement)?.value || "0") || null;
-              payload.abdominalSkinfoldMm = parseFloat((document.getElementById("abdominalFold") as HTMLInputElement)?.value || "0") || null;
-              payload.thighSkinfoldMm = parseFloat((document.getElementById("thighFold") as HTMLInputElement)?.value || "0") || null;
+              payload.chestSkinfoldMm =
+                parseFloat(
+                  (document.getElementById("chestFold") as HTMLInputElement)
+                    ?.value || "0",
+                ) || null;
+              payload.abdominalSkinfoldMm =
+                parseFloat(
+                  (document.getElementById("abdominalFold") as HTMLInputElement)
+                    ?.value || "0",
+                ) || null;
+              payload.thighSkinfoldMm =
+                parseFloat(
+                  (document.getElementById("thighFold") as HTMLInputElement)
+                    ?.value || "0",
+                ) || null;
             }
 
             await fetch("/api/admin/body-measurements", {
@@ -243,6 +306,7 @@ export function AdministrativeTab({ user }: AdministrativeTabProps) {
         void saveMeasurementsForUser(newUserId);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formState.success, formState.credentials]);
 
   const adminActions = [
@@ -589,7 +653,9 @@ export function AdministrativeTab({ user }: AdministrativeTabProps) {
                   </div>
 
                   <div>
-                    <h4 className="mb-3 font-semibold text-[#C2A537]">Medidas de Dobras Cutâneas (mm)</h4>
+                    <h4 className="mb-3 font-semibold text-[#C2A537]">
+                      Medidas de Dobras Cutâneas (mm)
+                    </h4>
                     <div className="grid gap-4 md:grid-cols-3">
                       {selectedGender === "masculino" ? (
                         <>
@@ -603,10 +669,33 @@ export function AdministrativeTab({ user }: AdministrativeTabProps) {
                               className="border-slate-600 bg-slate-800 text-white"
                               onChange={(e) => {
                                 const chest = parseFloat(e.target.value);
-                                const abdominal = parseFloat((document.getElementById("abdominalFold") as HTMLInputElement)?.value || "0");
-                                const thigh = parseFloat((document.getElementById("thighFold") as HTMLInputElement)?.value || "0");
-                                if (chest && abdominal && thigh && calculatedAge) {
-                                  calculateBodyFat(selectedGender, calculatedAge, chest, abdominal, thigh);
+                                const abdominal = parseFloat(
+                                  (
+                                    document.getElementById(
+                                      "abdominalFold",
+                                    ) as HTMLInputElement
+                                  )?.value || "0",
+                                );
+                                const thigh = parseFloat(
+                                  (
+                                    document.getElementById(
+                                      "thighFold",
+                                    ) as HTMLInputElement
+                                  )?.value || "0",
+                                );
+                                if (
+                                  chest &&
+                                  abdominal &&
+                                  thigh &&
+                                  calculatedAge
+                                ) {
+                                  calculateBodyFat(
+                                    selectedGender,
+                                    calculatedAge,
+                                    chest,
+                                    abdominal,
+                                    thigh,
+                                  );
                                 }
                               }}
                             />
@@ -621,10 +710,33 @@ export function AdministrativeTab({ user }: AdministrativeTabProps) {
                               className="border-slate-600 bg-slate-800 text-white"
                               onChange={(e) => {
                                 const abdominal = parseFloat(e.target.value);
-                                const chest = parseFloat((document.getElementById("chestFold") as HTMLInputElement)?.value || "0");
-                                const thigh = parseFloat((document.getElementById("thighFold") as HTMLInputElement)?.value || "0");
-                                if (chest && abdominal && thigh && calculatedAge) {
-                                  calculateBodyFat(selectedGender, calculatedAge, chest, abdominal, thigh);
+                                const chest = parseFloat(
+                                  (
+                                    document.getElementById(
+                                      "chestFold",
+                                    ) as HTMLInputElement
+                                  )?.value || "0",
+                                );
+                                const thigh = parseFloat(
+                                  (
+                                    document.getElementById(
+                                      "thighFold",
+                                    ) as HTMLInputElement
+                                  )?.value || "0",
+                                );
+                                if (
+                                  chest &&
+                                  abdominal &&
+                                  thigh &&
+                                  calculatedAge
+                                ) {
+                                  calculateBodyFat(
+                                    selectedGender,
+                                    calculatedAge,
+                                    chest,
+                                    abdominal,
+                                    thigh,
+                                  );
                                 }
                               }}
                             />
@@ -642,10 +754,33 @@ export function AdministrativeTab({ user }: AdministrativeTabProps) {
                               className="border-slate-600 bg-slate-800 text-white"
                               onChange={(e) => {
                                 const triceps = parseFloat(e.target.value);
-                                const suprailiac = parseFloat((document.getElementById("suprailiacFold") as HTMLInputElement)?.value || "0");
-                                const thigh = parseFloat((document.getElementById("thighFold") as HTMLInputElement)?.value || "0");
-                                if (triceps && suprailiac && thigh && calculatedAge) {
-                                  calculateBodyFat(selectedGender, calculatedAge, triceps, suprailiac, thigh);
+                                const suprailiac = parseFloat(
+                                  (
+                                    document.getElementById(
+                                      "suprailiacFold",
+                                    ) as HTMLInputElement
+                                  )?.value || "0",
+                                );
+                                const thigh = parseFloat(
+                                  (
+                                    document.getElementById(
+                                      "thighFold",
+                                    ) as HTMLInputElement
+                                  )?.value || "0",
+                                );
+                                if (
+                                  triceps &&
+                                  suprailiac &&
+                                  thigh &&
+                                  calculatedAge
+                                ) {
+                                  calculateBodyFat(
+                                    selectedGender,
+                                    calculatedAge,
+                                    triceps,
+                                    suprailiac,
+                                    thigh,
+                                  );
                                 }
                               }}
                             />
@@ -660,10 +795,33 @@ export function AdministrativeTab({ user }: AdministrativeTabProps) {
                               className="border-slate-600 bg-slate-800 text-white"
                               onChange={(e) => {
                                 const suprailiac = parseFloat(e.target.value);
-                                const triceps = parseFloat((document.getElementById("tricepsFold") as HTMLInputElement)?.value || "0");
-                                const thigh = parseFloat((document.getElementById("thighFold") as HTMLInputElement)?.value || "0");
-                                if (triceps && suprailiac && thigh && calculatedAge) {
-                                  calculateBodyFat(selectedGender, calculatedAge, triceps, suprailiac, thigh);
+                                const triceps = parseFloat(
+                                  (
+                                    document.getElementById(
+                                      "tricepsFold",
+                                    ) as HTMLInputElement
+                                  )?.value || "0",
+                                );
+                                const thigh = parseFloat(
+                                  (
+                                    document.getElementById(
+                                      "thighFold",
+                                    ) as HTMLInputElement
+                                  )?.value || "0",
+                                );
+                                if (
+                                  triceps &&
+                                  suprailiac &&
+                                  thigh &&
+                                  calculatedAge
+                                ) {
+                                  calculateBodyFat(
+                                    selectedGender,
+                                    calculatedAge,
+                                    triceps,
+                                    suprailiac,
+                                    thigh,
+                                  );
                                 }
                               }}
                             />
@@ -682,16 +840,62 @@ export function AdministrativeTab({ user }: AdministrativeTabProps) {
                             onChange={(e) => {
                               const thigh = parseFloat(e.target.value);
                               if (selectedGender === "masculino") {
-                                const chest = parseFloat((document.getElementById("chestFold") as HTMLInputElement)?.value || "0");
-                                const abdominal = parseFloat((document.getElementById("abdominalFold") as HTMLInputElement)?.value || "0");
-                                if (chest && abdominal && thigh && calculatedAge) {
-                                  calculateBodyFat(selectedGender, calculatedAge, chest, abdominal, thigh);
+                                const chest = parseFloat(
+                                  (
+                                    document.getElementById(
+                                      "chestFold",
+                                    ) as HTMLInputElement
+                                  )?.value || "0",
+                                );
+                                const abdominal = parseFloat(
+                                  (
+                                    document.getElementById(
+                                      "abdominalFold",
+                                    ) as HTMLInputElement
+                                  )?.value || "0",
+                                );
+                                if (
+                                  chest &&
+                                  abdominal &&
+                                  thigh &&
+                                  calculatedAge
+                                ) {
+                                  calculateBodyFat(
+                                    selectedGender,
+                                    calculatedAge,
+                                    chest,
+                                    abdominal,
+                                    thigh,
+                                  );
                                 }
                               } else {
-                                const triceps = parseFloat((document.getElementById("tricepsFold") as HTMLInputElement)?.value || "0");
-                                const suprailiac = parseFloat((document.getElementById("suprailiacFold") as HTMLInputElement)?.value || "0");
-                                if (triceps && suprailiac && thigh && calculatedAge) {
-                                  calculateBodyFat(selectedGender, calculatedAge, triceps, suprailiac, thigh);
+                                const triceps = parseFloat(
+                                  (
+                                    document.getElementById(
+                                      "tricepsFold",
+                                    ) as HTMLInputElement
+                                  )?.value || "0",
+                                );
+                                const suprailiac = parseFloat(
+                                  (
+                                    document.getElementById(
+                                      "suprailiacFold",
+                                    ) as HTMLInputElement
+                                  )?.value || "0",
+                                );
+                                if (
+                                  triceps &&
+                                  suprailiac &&
+                                  thigh &&
+                                  calculatedAge
+                                ) {
+                                  calculateBodyFat(
+                                    selectedGender,
+                                    calculatedAge,
+                                    triceps,
+                                    suprailiac,
+                                    thigh,
+                                  );
                                 }
                               }
                             }}
@@ -1240,7 +1444,6 @@ export function AdministrativeTab({ user }: AdministrativeTabProps) {
         type="paid"
         onUpdatePayment={async (userId, paid) => {
           try {
-            setUpdating(userId);
             await updatePaymentAction(userId, paid);
             const data = await getStudentsPaymentsAction();
             setStudentsData(data.filter((student) => student.isUpToDate));
@@ -1249,7 +1452,7 @@ export function AdministrativeTab({ user }: AdministrativeTabProps) {
               setStats(result.stats);
             }
           } finally {
-            setUpdating(null);
+            // Payment updated
           }
         }}
       />
@@ -1262,7 +1465,6 @@ export function AdministrativeTab({ user }: AdministrativeTabProps) {
         type="pending"
         onUpdatePayment={async (userId, paid) => {
           try {
-            setUpdating(userId);
             await updatePaymentAction(userId, paid);
             const data = await getStudentsPaymentsAction();
             setStudentsData(data.filter((student) => !student.isUpToDate));
@@ -1271,7 +1473,7 @@ export function AdministrativeTab({ user }: AdministrativeTabProps) {
               setStats(result.stats);
             }
           } finally {
-            setUpdating(null);
+            // Payment updated
           }
         }}
       />

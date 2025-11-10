@@ -303,8 +303,12 @@ export function ExpenseForm() {
   );
 }
 
-export function ExpenseTable() {
-  const [expenses, setExpenses] = useState<Expense[]>([]);
+export function ExpenseTable({
+  expenses: initialExpenses,
+}: {
+  expenses?: Expense[];
+}) {
+  const [expenses, setExpenses] = useState<Expense[]>(initialExpenses || []);
   const [loading, setLoading] = useState(true);
   const [showReport, setShowReport] = useState(false);
   const [expenseToDelete, setExpenseToDelete] = useState<string | null>(null);

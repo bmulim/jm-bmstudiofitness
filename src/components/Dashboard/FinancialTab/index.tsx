@@ -5,11 +5,14 @@ import {
   TrendingDown,
   TrendingUp,
   Users,
+  AlertCircle,
+  CheckCircle,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { getFinancialReportsAction } from "@/actions/admin/get-financial-reports-action";
 import { getPaymentDueDatesAction } from "@/actions/admin/get-payment-due-dates-action";
+import { getExpensesOverviewAction } from "@/actions/admin/get-expenses-overview-action";
 import { ExpenseForm, ExpenseTable } from "@/components/Admin/ExpenseManager";
 import { FinancialDashboardView } from "@/components/Dashboard/FinancialDashboardView";
 import { PaymentManagementView } from "@/components/Dashboard/PaymentManagementView";
@@ -31,11 +34,24 @@ export function FinancialTab() {
     dueNext7Days: 0,
     overdue: 0,
   });
+  const [expensesOverview, setExpensesOverview] = useState({
+    pending: {
+      count: 0,
+      totalInCents: 0,
+      totalFormatted: "R$ 0,00",
+    },
+    paid: {
+      count: 0,
+      totalInCents: 0,
+      totalFormatted: "R$ 0,00",
+    },
+  });
 
   // Carregar dados ao montar o componente
   useEffect(() => {
     loadOverviewData();
     loadDueDatesData();
+    loadExpensesOverview();
   }, []);
 
   const loadOverviewData = async () => {
@@ -64,6 +80,18 @@ export function FinancialTab() {
       }
     } catch (error) {
       console.error("Erro ao carregar vencimentos:", error);
+    }
+  };
+
+  const loadExpensesOverview = async () => {
+    try {
+      const result = await getExpensesOverviewAction();
+
+      if (result.success && result.data) {
+        setExpensesOverview(result.data);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar visão geral de despesas:", error);
     }
   };
 
@@ -102,7 +130,7 @@ export function FinancialTab() {
   return (
     <div className="space-y-6">
       {/* Visão Geral */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card className="border-green-500/50 bg-green-900/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-green-400">
@@ -160,6 +188,42 @@ export function FinancialTab() {
               {overview.paymentRate}%
             </div>
             <p className="text-xs text-[#C2A537]">Pagamentos no prazo</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-orange-500/50 bg-orange-900/20">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-orange-400">
+              Despesas Pendentes
+            </CardTitle>
+            <AlertCircle className="h-4 w-4 text-orange-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-300">
+              {expensesOverview.pending.totalFormatted}
+            </div>
+            <p className="text-xs text-orange-400">
+              {expensesOverview.pending.count}{" "}
+              {expensesOverview.pending.count === 1 ? "despesa" : "despesas"}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-emerald-500/50 bg-emerald-900/20">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-emerald-400">
+              Despesas Pagas
+            </CardTitle>
+            <CheckCircle className="h-4 w-4 text-emerald-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-emerald-300">
+              {expensesOverview.paid.totalFormatted}
+            </div>
+            <p className="text-xs text-emerald-400">
+              {expensesOverview.paid.count}{" "}
+              {expensesOverview.paid.count === 1 ? "despesa" : "despesas"}
+            </p>
           </CardContent>
         </Card>
       </div>

@@ -7,10 +7,11 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { studioExpensesTable } from "@/db/schema";
 import { adminGuard, verifyToken } from "@/lib/auth-utils";
+import { ExpenseCategory } from "@/types/expense-categories";
 
 export interface CreateExpenseInput {
   description: string;
-  category: string;
+  category: ExpenseCategory;
   amountInCents: number;
   dueDate: string | Date;
   paymentMethod: string;
@@ -96,7 +97,9 @@ export async function updateExpenseAction(input: UpdateExpenseInput) {
       .update(studioExpensesTable)
       .set({
         paid: input.paid,
-        paymentDate: input.paymentDate ? new Date(input.paymentDate) : null,
+        paymentDate: input.paymentDate
+          ? format(new Date(input.paymentDate), "yyyy-MM-dd")
+          : null,
         updatedAt: new Date(),
       })
       .where(eq(studioExpensesTable.id, input.id));

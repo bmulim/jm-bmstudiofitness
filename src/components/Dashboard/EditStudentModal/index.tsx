@@ -1,8 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
-import { useEffect } from "react";
+import { Loader2, Copy, Key, Mail } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -10,6 +10,8 @@ import {
   updateStudentAction,
   UpdateStudentData,
 } from "@/actions/admin/update-student-action";
+import { generateUserPasswordAction } from "@/actions/admin/generate-user-password-action";
+import { sendPasswordResetLinkAction } from "@/actions/admin/send-password-reset-link-action";
 import { showErrorToast, showSuccessToast } from "@/components/ToastProvider";
 import { Button } from "@/components/ui/button";
 import {
@@ -63,6 +65,12 @@ export function EditStudentModal({
   student,
   onSuccess,
 }: EditStudentModalProps) {
+  const [isGeneratingPassword, setIsGeneratingPassword] = useState(false);
+  const [isSendingResetLink, setIsSendingResetLink] = useState(false);
+  const [generatedPassword, setGeneratedPassword] = useState<string | null>(
+    null,
+  );
+
   const {
     register,
     handleSubmit,
@@ -86,8 +94,61 @@ export function EditStudentModal({
         paymentMethod: student.paymentMethod,
         dueDate: student.dueDate.toString(),
       });
+      // Limpar senha gerada quando o modal abrir
+      setGeneratedPassword(null);
     }
   }, [isOpen, student, reset]);
+
+  const handleGeneratePassword = async () => {
+    try {
+      setIsGeneratingPassword(true);
+      const result = await generateUserPasswordAction(student.userId);
+
+      if (result.success && result.password) {
+        setGeneratedPassword(result.password);
+        showSuccessToast("Senha gerada com sucesso!");
+      } else {
+        showErrorToast(result.message || "Erro ao gerar senha");
+      }
+    } catch (error) {
+      console.error("Erro ao gerar senha:", error);
+      showErrorToast("Erro ao gerar nova senha");
+    } finally {
+      setIsGeneratingPassword(false);
+    }
+  };
+
+  const handleCopyPassword = async () => {
+    if (generatedPassword) {
+      try {
+        await navigator.clipboard.writeText(generatedPassword);
+        showSuccessToast("Senha copiada para área de transferência!");
+      } catch (error) {
+        console.error("Erro ao copiar senha:", error);
+        showErrorToast("Erro ao copiar senha");
+      }
+    }
+  };
+
+  const handleSendResetLink = async () => {
+    try {
+      setIsSendingResetLink(true);
+      const result = await sendPasswordResetLinkAction(student.userId);
+
+      if (result.success) {
+        showSuccessToast(
+          result.message || "Link de redefinição enviado com sucesso!",
+        );
+      } else {
+        showErrorToast(result.message || "Erro ao enviar link de redefinição");
+      }
+    } catch (error) {
+      console.error("Erro ao enviar link:", error);
+      showErrorToast("Erro ao enviar link de redefinição");
+    } finally {
+      setIsSendingResetLink(false);
+    }
+  };
 
   const onSubmit = async (data: EditStudentFormData) => {
     try {
@@ -300,6 +361,80 @@ export function EditStudentModal({
                 </p>
               )}
             </div>
+          </div>
+
+          {/* Gerenciamento de Senha */}
+          <div className="space-y-4 border-t border-slate-700/50 pt-6">
+            <h3 className="text-lg font-semibold text-white">
+              Gerenciamento de Senha
+            </h3>
+
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleGeneratePassword}
+                disabled={isGeneratingPassword || isSubmitting}
+                className="flex-1 border-[#C2A537]/50 text-[#C2A537] hover:bg-[#C2A537]/10"
+              >
+                {isGeneratingPassword ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Gerando...
+                  </>
+                ) : (
+                  <>
+                    <Key className="mr-2 h-4 w-4" />
+                    Gerar Nova Senha
+                  </>
+                )}
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleSendResetLink}
+                disabled={isSendingResetLink || isSubmitting}
+                className="flex-1 border-[#C2A537]/50 text-[#C2A537] hover:bg-[#C2A537]/10"
+              >
+                {isSendingResetLink ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Enviando...
+                  </>
+                ) : (
+                  <>
+                    <Mail className="mr-2 h-4 w-4" />
+                    Enviar Link de Redefinição
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {generatedPassword && (
+              <div className="rounded-lg border border-[#C2A537]/30 bg-[#C2A537]/5 p-4">
+                <p className="mb-2 text-sm text-slate-300">
+                  Senha gerada com sucesso:
+                </p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 rounded bg-slate-800 px-3 py-2 font-mono text-sm text-white">
+                    {generatedPassword}
+                  </code>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={handleCopyPassword}
+                    className="border-[#C2A537]/50 text-[#C2A537] hover:bg-[#C2A537]/10"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="mt-2 text-xs text-slate-400">
+                  Esta senha foi salva no sistema. Copie e envie para o aluno.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Botões */}

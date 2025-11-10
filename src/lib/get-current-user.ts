@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { usersTable } from "@/db/schema";
-import { auth } from "@/lib/auth";
+import { personalDataTable, usersTable } from "@/db/schema";
+import { verifyToken } from "@/lib/auth-utils";
 
 export async function getCurrentUser(request: Request) {
   // Obter token da requisição
@@ -14,15 +14,22 @@ export async function getCurrentUser(request: Request) {
   }
 
   try {
-    // Validar token e buscar usuário
+    // Validar token JWT
+    const payload = verifyToken(token);
+    if (!payload) {
+      return null;
+    }
+
+    // Buscar usuário com dados pessoais
     const [user] = await db
       .select({
         id: usersTable.id,
-        email: usersTable.email,
+        email: personalDataTable.email,
         role: usersTable.userRole,
       })
       .from(usersTable)
-      .where(eq(usersTable.token, token))
+      .leftJoin(personalDataTable, eq(usersTable.id, personalDataTable.userId))
+      .where(eq(usersTable.id, payload.userId))
       .limit(1);
 
     return user;

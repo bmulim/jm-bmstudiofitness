@@ -6,6 +6,7 @@ import { StudentFullData } from "@/actions/admin/get-students-full-data-action";
 import { AdminSidebar } from "@/components/Admin/AdminSidebar";
 import { AdministrativeTab } from "@/components/Dashboard/AdministrativeTab";
 import { BlogTab } from "@/components/Dashboard/BlogTab";
+import { EmployeeTab } from "@/components/Dashboard/EmployeeTab";
 import { FinancialTab } from "@/components/Dashboard/FinancialTab";
 import { StudentsTab } from "@/components/Dashboard/StudentsTab";
 import { UserManagementContainer } from "@/components/Dashboard/UserManagementContainer";
@@ -39,6 +40,7 @@ export function AdminTabs({ students }: AdminTabsProps) {
               {activeTab === "administrative" && "Painel Administrativo"}
               {activeTab === "students" && "Consultar Alunos"}
               {activeTab === "users" && "Gerenciar Usuários"}
+              {activeTab === "employee" && "Funcionários"}
               {activeTab === "financial" && "Gestão Financeira"}
               {activeTab === "blog" && "Gerenciar Blog"}
             </h1>
@@ -49,6 +51,7 @@ export function AdminTabs({ students }: AdminTabsProps) {
                 "Busque e visualize dados completos dos alunos"}
               {activeTab === "users" &&
                 "Gerencie usuários e permissões do sistema"}
+              {activeTab === "employee" && "Gerencie funcionários e seus dados"}
               {activeTab === "financial" &&
                 "Acompanhe relatórios e gestão financeira"}
               {activeTab === "blog" && "Crie e gerencie posts do blog"}
@@ -57,9 +60,12 @@ export function AdminTabs({ students }: AdminTabsProps) {
 
           {/* Tab Content */}
           <div className="animate-in fade-in-50 slide-in-from-bottom-4 duration-500">
-            {activeTab === "administrative" && <AdministrativeTab />}
+            {activeTab === "administrative" && (
+              <AdministrativeTab user={{ id: "", name: "", userRole: "" }} />
+            )}
             {activeTab === "students" && <StudentsTab students={students} />}
             {activeTab === "users" && <UserManagementContainer />}
+            {activeTab === "employee" && <EmployeeTab />}
             {activeTab === "financial" && <FinancialTab />}
             {activeTab === "blog" && <BlogTab />}
           </div>

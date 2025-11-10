@@ -51,7 +51,10 @@ export const personalDataTable = pgTable("tb_personal_data", {
   cpf: varchar("cpf", { length: 11 }).notNull().unique(),
   email: text("email").notNull().unique(),
   bornDate: date("born_date").notNull(),
-  sex: text("sex").notNull().$type<"masculino" | "feminino">(),
+  sex: text("sex")
+    .notNull()
+    .default("masculino")
+    .$type<"masculino" | "feminino">(),
   address: text("address").notNull(),
   telephone: text("telephone").notNull(),
 });
@@ -194,11 +197,23 @@ export const bodyMeasurementsTable = pgTable("tb_body_measurements", {
   leftCalfCm: decimal("left_calf_cm", { precision: 5, scale: 2 }),
   bodyFatPercentage: decimal("body_fat_percentage", { precision: 5, scale: 2 }),
   tricepsSkinfoldMm: decimal("triceps_skinfold_mm", { precision: 5, scale: 2 }),
-  subscapularSkinfoldMm: decimal("subscapular_skinfold_mm", { precision: 5, scale: 2 }),
+  subscapularSkinfoldMm: decimal("subscapular_skinfold_mm", {
+    precision: 5,
+    scale: 2,
+  }),
   chestSkinfoldMm: decimal("chest_skinfold_mm", { precision: 5, scale: 2 }),
-  axillarySkinfoldMm: decimal("axillary_skinfold_mm", { precision: 5, scale: 2 }),
-  suprailiacSkinfoldMm: decimal("suprailiac_skinfold_mm", { precision: 5, scale: 2 }),
-  abdominalSkinfoldMm: decimal("abdominal_skinfold_mm", { precision: 5, scale: 2 }),
+  axillarySkinfoldMm: decimal("axillary_skinfold_mm", {
+    precision: 5,
+    scale: 2,
+  }),
+  suprailiacSkinfoldMm: decimal("suprailiac_skinfold_mm", {
+    precision: 5,
+    scale: 2,
+  }),
+  abdominalSkinfoldMm: decimal("abdominal_skinfold_mm", {
+    precision: 5,
+    scale: 2,
+  }),
   thighSkinfoldMm: decimal("thigh_skinfold_mm", { precision: 5, scale: 2 }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   measuredBy: uuid("measured_by").references(() => usersTable.id),
@@ -481,3 +496,97 @@ export const studioSettingsTable = pgTable("tb_studio_settings", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
+
+// Tabela para funcionários
+export const employeesTable = pgTable("tb_employees", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .unique()
+    .references(() => usersTable.id),
+  position: text("position").notNull(), // Cargo: 'professor', 'recepcionista', 'limpeza', etc.
+  shift: text("shift").notNull(), // Turno: 'manha', 'tarde', 'noite', 'integral'
+  shiftStartTime: text("shift_start_time").notNull(), // Horário início: '06:00'
+  shiftEndTime: text("shift_end_time").notNull(), // Horário fim: '14:00'
+  salaryInCents: integer("salary_in_cents").notNull(), // Salário em centavos
+  hireDate: date("hire_date").notNull(), // Data de contratação
+  deletedAt: timestamp("deleted_at"), // Soft delete
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const employeesRelations = relations(
+  employeesTable,
+  ({ one, many }) => ({
+    user: one(usersTable, {
+      fields: [employeesTable.userId],
+      references: [usersTable.id],
+    }),
+    salaryHistory: many(employeeSalaryHistoryTable),
+    timeRecords: many(employeeTimeRecordsTable),
+  }),
+);
+
+// Tabela para histórico de salários dos funcionários
+export const employeeSalaryHistoryTable = pgTable(
+  "tb_employee_salary_history",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    employeeId: uuid("employee_id")
+      .notNull()
+      .references(() => employeesTable.id),
+    previousSalaryInCents: integer("previous_salary_in_cents").notNull(),
+    newSalaryInCents: integer("new_salary_in_cents").notNull(),
+    changeReason: text("change_reason"), // Motivo da alteração
+    changedBy: uuid("changed_by")
+      .notNull()
+      .references(() => usersTable.id), // Quem fez a alteração
+    effectiveDate: date("effective_date").notNull(), // Data que a alteração passa a valer
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+);
+
+export const employeeSalaryHistoryRelations = relations(
+  employeeSalaryHistoryTable,
+  ({ one }) => ({
+    employee: one(employeesTable, {
+      fields: [employeeSalaryHistoryTable.employeeId],
+      references: [employeesTable.id],
+    }),
+    changedByUser: one(usersTable, {
+      fields: [employeeSalaryHistoryTable.changedBy],
+      references: [usersTable.id],
+    }),
+  }),
+);
+
+// Tabela para controle de ponto dos funcionários
+export const employeeTimeRecordsTable = pgTable("tb_employee_time_records", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  employeeId: uuid("employee_id")
+    .notNull()
+    .references(() => employeesTable.id),
+  date: date("date").notNull(),
+  checkInTime: text("check_in_time"), // Horário de entrada
+  checkOutTime: text("check_out_time"), // Horário de saída
+  totalHours: text("total_hours"), // Horas trabalhadas calculadas
+  notes: text("notes"), // Observações (ex: "Saiu mais cedo")
+  approved: boolean("approved").notNull().default(false), // Se foi aprovado pelo gestor
+  approvedBy: uuid("approved_by").references(() => usersTable.id),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const employeeTimeRecordsRelations = relations(
+  employeeTimeRecordsTable,
+  ({ one }) => ({
+    employee: one(employeesTable, {
+      fields: [employeeTimeRecordsTable.employeeId],
+      references: [employeesTable.id],
+    }),
+    approvedByUser: one(usersTable, {
+      fields: [employeeTimeRecordsTable.approvedBy],
+      references: [usersTable.id],
+    }),
+  }),
+);

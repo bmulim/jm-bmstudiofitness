@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { updatePassword } from "@/actions/user/update-password-action";
-import { auth } from "@/lib/auth";
+import { getUserFromRequest } from "@/lib/auth-utils";
 
 const changePasswordSchema = z.object({
   currentPassword: z.string().min(1),
@@ -12,8 +12,8 @@ const changePasswordSchema = z.object({
 export async function POST(req: NextRequest) {
   try {
     // Verificar autenticação
-    const session = await auth();
-    if (!session?.user?.id) {
+    const user = getUserFromRequest(req);
+    if (!user?.id) {
       return NextResponse.json(
         { success: false, message: "Não autorizado" },
         { status: 401 },
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
 
     // Atualizar senha
     const result = await updatePassword(
-      session.user.id,
+      user.id,
       validatedData.currentPassword,
       validatedData.newPassword,
     );

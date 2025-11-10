@@ -22,6 +22,7 @@ export interface CreateUserData {
   password: string;
   confirmPassword: string;
   role: UserRole;
+  sex?: "masculino" | "feminino";
   cpf?: string;
   telephone?: string;
   address?: string;

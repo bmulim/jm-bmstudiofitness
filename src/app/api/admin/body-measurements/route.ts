@@ -1,10 +1,10 @@
+import { desc,eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { db } from "@/db";
 import { bodyMeasurementsTable } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
 
 const saveSchema = z.object({
   userId: z.string().uuid().optional(),
@@ -77,7 +77,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[API] Error saving body measurement:", error);
-    return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: String(error) },
+      { status: 500 },
+    );
   }
 }
 
@@ -87,7 +90,10 @@ export async function GET(req: NextRequest) {
     const userId = url.searchParams.get("userId");
 
     if (!userId) {
-      return NextResponse.json({ success: false, error: "userId is required" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "userId is required" },
+        { status: 400 },
+      );
     }
 
     const measurements = await db
@@ -99,6 +105,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: true, measurements });
   } catch (error) {
     console.error("[API] Error fetching body measurements:", error);
-    return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: String(error) },
+      { status: 500 },
+    );
   }
 }
