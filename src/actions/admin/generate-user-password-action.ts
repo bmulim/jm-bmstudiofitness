@@ -1,7 +1,7 @@
 "use server";
 
-import { eq } from "drizzle-orm";
 import { hash } from "bcryptjs";
+import { eq } from "drizzle-orm";
 
 import { db } from "@/db";
 import { usersTable } from "@/db/schema";

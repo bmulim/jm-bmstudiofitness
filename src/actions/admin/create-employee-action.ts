@@ -4,7 +4,7 @@ import { hash } from "bcryptjs";
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
-import { usersTable, personalDataTable, employeesTable } from "@/db/schema";
+import { employeesTable,personalDataTable, usersTable } from "@/db/schema";
 import { UserRole } from "@/types/user-roles";
 
 export interface CreateEmployeeData {

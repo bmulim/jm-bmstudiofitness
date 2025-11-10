@@ -2,6 +2,9 @@
 
 import {
   Activity,
+  Calendar,
+  CheckCircle2,
+  Clock,
   Eye,
   EyeOff,
   FileText,
@@ -13,6 +16,10 @@ import {
 import { useActionState, useEffect, useState } from "react";
 
 import { logoutFormAction } from "@/actions/auth/logout-action";
+import {
+  getProfessorCheckInsAction,
+  professorCheckInAction,
+} from "@/actions/coach/professor-checkin-action";
 import {
   getStudentsHealthDataAction,
   StudentHealthData,
@@ -44,6 +51,20 @@ const CoachPage = () => {
   const [loading, setLoading] = useState(true);
   const [lastSuccessState, setLastSuccessState] = useState(false);
 
+  // Estados de check-in
+  const [todayCheckIn, setTodayCheckIn] = useState<{
+    date: string;
+    time: string;
+  } | null>(null);
+  const [checkInLoading, setCheckInLoading] = useState(false);
+  const [checkInMessage, setCheckInMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+  const [recentCheckIns, setRecentCheckIns] = useState<
+    Array<{ date: string; checkInTime: string; notes: string | null }>
+  >([]);
+
   const initialState = { success: false, error: "", message: "" };
   const [state, action, isPending] = useActionState(
     updateCoachObservationsAction,
@@ -67,6 +88,89 @@ const CoachPage = () => {
 
     loadStudents();
   }, []);
+
+  // Carregar check-ins do professor
+  useEffect(() => {
+    const loadCheckIns = async () => {
+      try {
+        // Buscar últimos 7 dias
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - 7);
+
+        const result = await getProfessorCheckInsAction(
+          startDate.toISOString().split("T")[0],
+          endDate.toISOString().split("T")[0],
+        );
+
+        if (result.success && result.data) {
+          setRecentCheckIns(result.data);
+
+          // Verificar se há check-in hoje
+          const today = new Date().toISOString().split("T")[0];
+          const todayCheck = result.data.find((c) => c.date === today);
+          if (todayCheck) {
+            setTodayCheckIn({
+              date: todayCheck.date,
+              time: todayCheck.checkInTime,
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Erro ao carregar check-ins:", error);
+      }
+    };
+
+    loadCheckIns();
+  }, []);
+
+  // Função de check-in
+  const handleCheckIn = async () => {
+    setCheckInLoading(true);
+    setCheckInMessage(null);
+
+    try {
+      const result = await professorCheckInAction();
+
+      if (result.success && result.checkInData) {
+        setTodayCheckIn({
+          date: result.checkInData.date,
+          time: result.checkInData.time,
+        });
+        setCheckInMessage({
+          type: "success",
+          text: result.message || "Check-in realizado com sucesso!",
+        });
+
+        // Recarregar check-ins
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - 7);
+
+        const checkInsResult = await getProfessorCheckInsAction(
+          startDate.toISOString().split("T")[0],
+          endDate.toISOString().split("T")[0],
+        );
+
+        if (checkInsResult.success && checkInsResult.data) {
+          setRecentCheckIns(checkInsResult.data);
+        }
+      } else {
+        setCheckInMessage({
+          type: "error",
+          text: result.error || "Erro ao realizar check-in",
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao fazer check-in:", error);
+      setCheckInMessage({
+        type: "error",
+        text: "Erro ao realizar check-in",
+      });
+    } finally {
+      setCheckInLoading(false);
+    }
+  };
 
   // Filtrar alunos quando o termo de busca muda
   useEffect(() => {
@@ -192,6 +296,109 @@ const CoachPage = () => {
             </Button>
           </form>
         </div>
+
+        {/* Card de Check-in do Professor */}
+        <Card className="border-[#C2A537]/30 bg-black/40">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-[#C2A537]">
+              <Calendar className="h-5 w-5" />
+              Check-in de Presença
+            </CardTitle>
+            <CardDescription>
+              Registre sua presença hoje - Apenas marcação de horário
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2">
+              {/* Status e Botão de Check-in */}
+              <div className="space-y-4">
+                {todayCheckIn ? (
+                  <div className="rounded-lg border border-green-600 bg-green-900/20 p-4">
+                    <div className="mb-2 flex items-center gap-2">
+                      <CheckCircle2 className="h-5 w-5 text-green-400" />
+                      <h4 className="font-semibold text-green-400">
+                        Check-in Realizado!
+                      </h4>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-slate-300">
+                      <Clock className="h-4 w-4" />
+                      <span>Hoje às {todayCheckIn.time}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <Button
+                      onClick={handleCheckIn}
+                      disabled={checkInLoading}
+                      className="w-full bg-[#C2A537] text-black hover:bg-[#D4B547] disabled:opacity-50"
+                    >
+                      {checkInLoading ? (
+                        <>
+                          <Activity className="mr-2 h-4 w-4 animate-spin" />
+                          Processando...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="mr-2 h-4 w-4" />
+                          Fazer Check-in Agora
+                        </>
+                      )}
+                    </Button>
+                    <p className="text-center text-xs text-slate-400">
+                      Marque sua presença com um clique
+                    </p>
+                  </div>
+                )}
+
+                {checkInMessage && (
+                  <div
+                    className={`rounded-lg border p-3 ${
+                      checkInMessage.type === "success"
+                        ? "border-green-600 bg-green-900/20 text-green-400"
+                        : "border-red-600 bg-red-900/20 text-red-400"
+                    }`}
+                  >
+                    <p className="text-sm">{checkInMessage.text}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Histórico Recente */}
+              <div>
+                <h4 className="mb-3 font-medium text-slate-300">
+                  Últimos 7 dias
+                </h4>
+                <div className="max-h-40 space-y-2 overflow-y-auto rounded-lg border border-slate-700 bg-slate-900/50 p-3">
+                  {recentCheckIns.length === 0 ? (
+                    <p className="py-4 text-center text-sm text-slate-500">
+                      Nenhum check-in registrado
+                    </p>
+                  ) : (
+                    recentCheckIns.map((checkIn, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between border-b border-slate-700 pb-2 last:border-0"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-[#C2A537]" />
+                          <span className="text-sm text-slate-300">
+                            {new Date(checkIn.date).toLocaleDateString("pt-BR")}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-3 w-3 text-slate-400" />
+                          <span className="text-sm text-slate-400">
+                            {checkIn.checkInTime}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Busca */}
         <Card className="border-[#C2A537]/30 bg-black/40">

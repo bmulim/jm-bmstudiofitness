@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
 import { usersTable } from "@/db/schema";
+import { checkPermission } from "@/lib/check-permission";
 import { UserRole } from "@/types/user-roles";
 
 export async function deleteStudentAction(userId: string) {
@@ -29,6 +30,26 @@ export async function deleteStudentAction(userId: string) {
         error: "Não é permitido excluir usuários administradores",
       };
     }
+
+    // VERIFICAR PERMISSÕES
+    const targetUserType = user[0].userRole;
+    const permissionCheck = await checkPermission("users", "delete", {
+      targetUserType,
+      targetUserId: userId,
+    });
+
+    if (!permissionCheck.allowed) {
+      return {
+        success: false,
+        error:
+          permissionCheck.error ||
+          "Você não tem permissão para excluir este usuário",
+      };
+    }
+
+    console.log(
+      `✅ Usuário ${permissionCheck.user?.email} autorizado a excluir ${targetUserType}`,
+    );
 
     // Soft delete - apenas marca como deletado
     await db

@@ -9,7 +9,7 @@ export enum UserRole {
 
 export interface PermissionConditions {
   userType?: string;
-  targetUserType?: string;
+  targetUserType?: string | string[]; // Pode ser um tipo ou array de tipos
   ownData?: boolean;
   excludeFields?: string[];
 }
@@ -94,34 +94,34 @@ export const USER_PERMISSIONS: RolePermissions[] = [
   {
     role: UserRole.FUNCIONARIO,
     description:
-      "Acesso parcial ao sistema - gerenciamento de alunos e financeiro",
+      "Acesso limitado - pode criar professor/aluno e gerenciar mensalidades",
     permissions: [
       {
         resource: "users",
         actions: ["create", "read", "update"],
-        conditions: { targetUserType: "aluno" },
+        conditions: { targetUserType: ["aluno", "professor"] }, // Pode criar/editar apenas aluno e professor
       },
       {
         resource: "personalData",
         actions: ["create", "read", "update"],
-        conditions: { targetUserType: "aluno" },
+        conditions: { targetUserType: ["aluno", "professor"] },
       },
       {
         resource: "healthMetrics",
-        actions: ["create", "read", "update"],
-        conditions: {
-          targetUserType: "aluno",
-          excludeFields: ["coachObservationsParticular"],
-        },
+        actions: [], // SEM acesso a dados de saúde
       },
       {
-        resource: "financial",
-        actions: ["create", "read", "update"],
+        resource: "financialMonthlyPayment",
+        actions: ["read", "update"], // Apenas ver status e alterar pago/não pago da mensalidade
         conditions: { targetUserType: "aluno" },
       },
       {
+        resource: "financial",
+        actions: [], // SEM acesso ao financeiro completo (montantes, despesas, etc)
+      },
+      {
         resource: "coachObservationsParticular",
-        actions: [], // Sem acesso às observações particulares do coach
+        actions: [], // SEM acesso às observações particulares do coach
       },
     ],
   },
@@ -141,7 +141,7 @@ export const USER_PERMISSIONS: RolePermissions[] = [
       },
       {
         resource: "healthMetrics",
-        actions: ["read"],
+        actions: ["read", "update"], // Pode editar seus próprios dados de saúde
         conditions: {
           ownData: true,
           excludeFields: ["coachObservationsParticular"],
@@ -197,6 +197,10 @@ export function checkConditions(
       return context.userType === value;
     }
     if (key === "targetUserType") {
+      // Suporta string única ou array de strings
+      if (Array.isArray(value)) {
+        return value.includes(context.targetUserType || "");
+      }
       return context.targetUserType === value;
     }
     if (key === "excludeFields") {

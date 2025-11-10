@@ -524,6 +524,7 @@ export const employeesRelations = relations(
     }),
     salaryHistory: many(employeeSalaryHistoryTable),
     timeRecords: many(employeeTimeRecordsTable),
+    professorCheckIns: many(professorCheckInsTable), // Check-ins de professor
   }),
 );
 
@@ -587,6 +588,28 @@ export const employeeTimeRecordsRelations = relations(
     approvedByUser: one(usersTable, {
       fields: [employeeTimeRecordsTable.approvedBy],
       references: [usersTable.id],
+    }),
+  }),
+);
+
+// Tabela para check-in de professores (sem controle de horário)
+export const professorCheckInsTable = pgTable("tb_professor_check_ins", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  professorId: uuid("professor_id")
+    .notNull()
+    .references(() => employeesTable.id), // Professor é registrado na tabela employees
+  date: date("date").notNull(),
+  checkInTime: text("check_in_time").notNull(), // Apenas horário de entrada (registro de presença)
+  notes: text("notes"), // Observações opcionais
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const professorCheckInsRelations = relations(
+  professorCheckInsTable,
+  ({ one }) => ({
+    professor: one(employeesTable, {
+      fields: [professorCheckInsTable.professorId],
+      references: [employeesTable.id],
     }),
   }),
 );

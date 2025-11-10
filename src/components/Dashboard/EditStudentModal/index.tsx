@@ -1,17 +1,17 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Copy, Key, Mail } from "lucide-react";
+import { Copy, Key, Loader2, Mail } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { generateUserPasswordAction } from "@/actions/admin/generate-user-password-action";
+import { sendPasswordResetLinkAction } from "@/actions/admin/send-password-reset-link-action";
 import {
   updateStudentAction,
   UpdateStudentData,
 } from "@/actions/admin/update-student-action";
-import { generateUserPasswordAction } from "@/actions/admin/generate-user-password-action";
-import { sendPasswordResetLinkAction } from "@/actions/admin/send-password-reset-link-action";
 import { showErrorToast, showSuccessToast } from "@/components/ToastProvider";
 import { Button } from "@/components/ui/button";
 import {

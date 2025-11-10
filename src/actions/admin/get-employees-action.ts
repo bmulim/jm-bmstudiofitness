@@ -3,7 +3,7 @@
 import { eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { usersTable, personalDataTable, employeesTable } from "@/db/schema";
+import { employeesTable,personalDataTable, usersTable } from "@/db/schema";
 
 export interface EmployeeFullData {
   id: string;

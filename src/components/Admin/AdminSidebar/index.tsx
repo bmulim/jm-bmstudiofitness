@@ -7,8 +7,8 @@ import {
   LogOut,
   Menu,
   Shield,
-  Users,
   UserCog,
+  Users,
   X,
 } from "lucide-react";
 import Link from "next/link";

@@ -13,6 +13,7 @@ import {
   userConfirmationTokensTable,
   usersTable,
 } from "@/db/schema";
+import { canCreateUserType } from "@/lib/check-permission";
 import {
   generateConfirmationToken,
   getTokenExpirationDate,
@@ -100,6 +101,22 @@ export async function createAlunoAction(
   formData: FormData,
 ): Promise<FormState> {
   try {
+    // 1. VERIFICAR PERMISSÕES - Apenas admin e funcionário podem criar alunos
+    const permissionCheck = await canCreateUserType("aluno");
+
+    if (!permissionCheck.allowed) {
+      return {
+        success: false,
+        message:
+          permissionCheck.error ||
+          "Você não tem permissão para criar alunos. Apenas administradores e funcionários podem realizar esta ação.",
+      };
+    }
+
+    console.log(
+      `✅ Usuário ${permissionCheck.user?.email} (${permissionCheck.user?.role}) autorizado a criar aluno`,
+    );
+
     // Converter FormData para objeto
     const rawData = Object.fromEntries(formData.entries());
 

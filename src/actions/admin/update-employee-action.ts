@@ -8,7 +8,9 @@ import {
   employeeSalaryHistoryTable,
   employeesTable,
   personalDataTable,
+  usersTable,
 } from "@/db/schema";
+import { canUpdateUserType } from "@/lib/check-permission";
 
 export interface UpdateEmployeeData {
   // Dados pessoais (opcional)
@@ -37,8 +39,14 @@ export async function updateEmployeeAction(
   try {
     // Buscar funcionário atual
     const [employee] = await db
-      .select()
+      .select({
+        id: employeesTable.id,
+        userId: employeesTable.userId,
+        salaryInCents: employeesTable.salaryInCents,
+        userRole: usersTable.userRole,
+      })
       .from(employeesTable)
+      .innerJoin(usersTable, eq(employeesTable.userId, usersTable.id))
       .where(eq(employeesTable.id, employeeId));
 
     if (!employee) {
@@ -47,6 +55,29 @@ export async function updateEmployeeAction(
         error: "Funcionário não encontrado",
       };
     }
+
+    // VERIFICAR PERMISSÕES - apenas admin pode editar funcionários/professores
+    // Funcionário só pode editar alunos
+    const targetUserType =
+      employee.userRole === "professor" ? "professor" : "funcionario";
+
+    const permissionCheck = await canUpdateUserType(
+      targetUserType,
+      employee.userId,
+    );
+
+    if (!permissionCheck.allowed) {
+      return {
+        success: false,
+        error:
+          permissionCheck.error ||
+          `Você não tem permissão para editar ${targetUserType === "professor" ? "professores" : "funcionários"}`,
+      };
+    }
+
+    console.log(
+      `✅ Usuário ${permissionCheck.user?.email} autorizado a editar ${targetUserType}`,
+    );
 
     // Se houver alteração de salário, registrar no histórico
     if (
@@ -66,7 +97,7 @@ export async function updateEmployeeAction(
     }
 
     // Atualizar dados do funcionário
-    const employeeUpdates: Record<string, any> = {};
+    const employeeUpdates: Partial<typeof employeesTable.$inferInsert> = {};
     if (data.position !== undefined) employeeUpdates.position = data.position;
     if (data.shift !== undefined) employeeUpdates.shift = data.shift;
     if (data.shiftStartTime !== undefined)
@@ -86,7 +117,7 @@ export async function updateEmployeeAction(
     }
 
     // Atualizar dados pessoais se fornecidos
-    const personalUpdates: Record<string, any> = {};
+    const personalUpdates: Partial<typeof personalDataTable.$inferInsert> = {};
     if (data.email !== undefined) personalUpdates.email = data.email;
     if (data.telephone !== undefined)
       personalUpdates.telephone = data.telephone;
