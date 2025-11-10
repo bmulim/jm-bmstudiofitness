@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm";
 import {
   boolean,
   date,
+  decimal,
   integer,
   pgTable,
   text,
@@ -168,6 +169,51 @@ export const coachObservationsHistoryRelations = relations(
     }),
     professor: one(usersTable, {
       fields: [coachObservationsHistoryTable.professorId],
+      references: [usersTable.id],
+    }),
+  }),
+);
+
+// Tabela para medições corporais dos alunos
+export const bodyMeasurementsTable = pgTable("tb_body_measurements", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => usersTable.id),
+  weightKg: decimal("weight_kg", { precision: 5, scale: 2 }).notNull(),
+  heightCm: decimal("height_cm", { precision: 5, scale: 2 }).notNull(),
+  chestCm: decimal("chest_cm", { precision: 5, scale: 2 }),
+  waistCm: decimal("waist_cm", { precision: 5, scale: 2 }),
+  abdomenCm: decimal("abdomen_cm", { precision: 5, scale: 2 }),
+  hipCm: decimal("hip_cm", { precision: 5, scale: 2 }),
+  rightArmCm: decimal("right_arm_cm", { precision: 5, scale: 2 }),
+  leftArmCm: decimal("left_arm_cm", { precision: 5, scale: 2 }),
+  rightThighCm: decimal("right_thigh_cm", { precision: 5, scale: 2 }),
+  leftThighCm: decimal("left_thigh_cm", { precision: 5, scale: 2 }),
+  rightCalfCm: decimal("right_calf_cm", { precision: 5, scale: 2 }),
+  leftCalfCm: decimal("left_calf_cm", { precision: 5, scale: 2 }),
+  bodyFatPercentage: decimal("body_fat_percentage", { precision: 5, scale: 2 }),
+  tricepsSkinfoldMm: decimal("triceps_skinfold_mm", { precision: 5, scale: 2 }),
+  subscapularSkinfoldMm: decimal("subscapular_skinfold_mm", { precision: 5, scale: 2 }),
+  chestSkinfoldMm: decimal("chest_skinfold_mm", { precision: 5, scale: 2 }),
+  axillarySkinfoldMm: decimal("axillary_skinfold_mm", { precision: 5, scale: 2 }),
+  suprailiacSkinfoldMm: decimal("suprailiac_skinfold_mm", { precision: 5, scale: 2 }),
+  abdominalSkinfoldMm: decimal("abdominal_skinfold_mm", { precision: 5, scale: 2 }),
+  thighSkinfoldMm: decimal("thigh_skinfold_mm", { precision: 5, scale: 2 }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  measuredBy: uuid("measured_by").references(() => usersTable.id),
+  notes: text("notes"),
+});
+
+export const bodyMeasurementsRelations = relations(
+  bodyMeasurementsTable,
+  ({ one }) => ({
+    user: one(usersTable, {
+      fields: [bodyMeasurementsTable.userId],
+      references: [usersTable.id],
+    }),
+    measuredByUser: one(usersTable, {
+      fields: [bodyMeasurementsTable.measuredBy],
       references: [usersTable.id],
     }),
   }),

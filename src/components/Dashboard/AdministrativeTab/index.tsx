@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useActionState, useEffect, useState } from "react";
 
+
 import {
   DashboardStats,
   getDashboardStatsAction,
@@ -24,6 +25,7 @@ import {
   createAlunoAction,
   FormState,
 } from "@/actions/user/create-aluno-action";
+import { BodyMeasurementsHistoryView } from "@/components/Admin/BodyMeasurementsHistoryView";
 import { PaymentStatusModal } from "@/components/Admin/PaymentStatusModal";
 import { StudentCredentialsModal } from "@/components/Admin/StudentCredentialsModal";
 import { AcademySettingsView } from "@/components/Dashboard/AcademySettingsView";
@@ -35,7 +37,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatCurrency } from "@/lib/payment-utils";
 
-export function AdministrativeTab() {
+interface User {
+  id: string;
+  name: string;
+  userRole: string;
+}
+
+interface AdministrativeTabProps {
+  user: User;
+}
+
+export function AdministrativeTab({ user }: AdministrativeTabProps) {
   const [showForm, setShowForm] = useState(false);
   const [showManageStudents, setShowManageStudents] = useState(false);
   const [showReports, setShowReports] = useState(false);
@@ -43,6 +55,80 @@ export function AdministrativeTab() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
   const [calculatedAge, setCalculatedAge] = useState<number | null>(null);
+  const [bodyFatPercentage, setBodyFatPercentage] = useState<number | null>(null);
+  const [selectedGender, setSelectedGender] = useState<string>("");
+  const [currentStudentId, setCurrentStudentId] = useState<string | null>(null);
+
+  const calculateBodyFat = async (gender: string, age: number, fold1: number, fold2: number, fold3: number) => {
+    const sumFolds = fold1 + fold2 + fold3;
+    let dc;
+
+    if (gender === "feminino") {
+      // Fórmula para mulheres (tríceps, suprailíaca e coxa)
+      dc = 1.099421 - (0.0009928 * sumFolds) + (0.0000023 * Math.pow(sumFolds, 2)) - (0.0001392 * age);
+    } else {
+      // Fórmula para homens (peitoral, abdominal e coxa)
+      dc = 1.10938 - (0.0008267 * sumFolds) + (0.0000016 * Math.pow(sumFolds, 2)) - (0.0002574 * age);
+    }
+
+    // Fórmula de Siri para percentual de gordura
+    const fatPercentage = (495 / dc) - 450;
+    const bodyFatValue = Number(fatPercentage.toFixed(2));
+    setBodyFatPercentage(bodyFatValue);
+
+    // Salva os dados via API somente se tivermos um userId (edição de aluno)
+    const studentIdElement = typeof document !== "undefined" ? (document.getElementById("studentId") as HTMLInputElement | null) : null;
+    const studentId = studentIdElement?.value || null;
+
+    const weightValue = parseFloat((document.getElementById("weightKg") as HTMLInputElement)?.value || "0");
+    const heightValue = parseFloat((document.getElementById("heightCm") as HTMLInputElement)?.value || "0");
+
+    const measurementData: Record<string, unknown> = {
+      userId: studentId,
+      weightKg: isNaN(weightValue) ? null : weightValue,
+      heightCm: isNaN(heightValue) ? null : heightValue,
+      bodyFatPercentage: bodyFatValue,
+      measuredBy: user?.id || null,
+      notes: "Medição realizada durante cadastro/atualização",
+    };
+
+    if (gender === "feminino") {
+      const tricepsValue = parseFloat((document.getElementById("tricepsFold") as HTMLInputElement)?.value || "0");
+      const suprailiacValue = parseFloat((document.getElementById("suprailiacFold") as HTMLInputElement)?.value || "0");
+      const thighValue = parseFloat((document.getElementById("thighFold") as HTMLInputElement)?.value || "0");
+
+      Object.assign(measurementData, {
+        tricepsSkinfoldMm: isNaN(tricepsValue) ? null : tricepsValue,
+        suprailiacSkinfoldMm: isNaN(suprailiacValue) ? null : suprailiacValue,
+        thighSkinfoldMm: isNaN(thighValue) ? null : thighValue,
+      });
+    } else {
+      const chestValue = parseFloat((document.getElementById("chestFold") as HTMLInputElement)?.value || "0");
+      const abdominalValue = parseFloat((document.getElementById("abdominalFold") as HTMLInputElement)?.value || "0");
+      const thighValue = parseFloat((document.getElementById("thighFold") as HTMLInputElement)?.value || "0");
+
+      Object.assign(measurementData, {
+        chestSkinfoldMm: isNaN(chestValue) ? null : chestValue,
+        abdominalSkinfoldMm: isNaN(abdominalValue) ? null : abdominalValue,
+        thighSkinfoldMm: isNaN(thighValue) ? null : thighValue,
+      });
+    }
+
+    if (studentId) {
+      try {
+        await fetch("/api/admin/body-measurements", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(measurementData),
+        });
+      } catch (error) {
+        console.error("Error saving body measurements via API:", error);
+      }
+    } else {
+      // Sem userId (novo cadastro) — salvará apenas quando o aluno existir
+      console.debug("Skipping save: no studentId available yet");
+    }
+  };
 
   const calculateAge = (bornDate: string) => {
     const today = new Date();
@@ -114,6 +200,47 @@ export function AdministrativeTab() {
       // Mostrar modal com as credenciais
       if (formState.credentials) {
         setShowCredentialsModal(true);
+      }
+      // Se o servidor retornou o id do usuário criado, salvar as medições enviadas no formulário
+      if ((formState as any).createdUserId) {
+        const newUserId = (formState as any).createdUserId as string;
+        setCurrentStudentId(newUserId);
+        // Salvar medições que o treinador já tenha preenchido no formulário
+        const saveMeasurementsForUser = async (userId: string) => {
+          try {
+            const weightValue = parseFloat((document.getElementById("weightKg") as HTMLInputElement)?.value || "0");
+            const heightValue = parseFloat((document.getElementById("heightCm") as HTMLInputElement)?.value || "0");
+
+            const payload: Record<string, unknown> = {
+              userId,
+              weightKg: isNaN(weightValue) ? null : weightValue,
+              heightCm: isNaN(heightValue) ? null : heightValue,
+              bodyFatPercentage: bodyFatPercentage,
+              measuredBy: user?.id || null,
+              notes: "Medição inicial no cadastro",
+            };
+
+            if (selectedGender === "feminino") {
+              payload.tricepsSkinfoldMm = parseFloat((document.getElementById("tricepsFold") as HTMLInputElement)?.value || "0") || null;
+              payload.suprailiacSkinfoldMm = parseFloat((document.getElementById("suprailiacFold") as HTMLInputElement)?.value || "0") || null;
+              payload.thighSkinfoldMm = parseFloat((document.getElementById("thighFold") as HTMLInputElement)?.value || "0") || null;
+            } else {
+              payload.chestSkinfoldMm = parseFloat((document.getElementById("chestFold") as HTMLInputElement)?.value || "0") || null;
+              payload.abdominalSkinfoldMm = parseFloat((document.getElementById("abdominalFold") as HTMLInputElement)?.value || "0") || null;
+              payload.thighSkinfoldMm = parseFloat((document.getElementById("thighFold") as HTMLInputElement)?.value || "0") || null;
+            }
+
+            await fetch("/api/admin/body-measurements", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+          } catch (error) {
+            console.error("Erro ao salvar medições iniciais:", error);
+          }
+        };
+
+        void saveMeasurementsForUser(newUserId);
       }
     }
   }, [formState.success, formState.credentials]);
@@ -272,6 +399,9 @@ export function AdministrativeTab() {
                       name="sex"
                       required
                       className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-white focus:border-[#C2A537] focus:outline-none"
+                      onChange={(e) => {
+                        setSelectedGender(e.target.value);
+                      }}
                     >
                       <option value="">Selecione</option>
                       <option value="masculino">Masculino</option>
@@ -423,37 +553,159 @@ export function AdministrativeTab() {
                   </div>
                   Dados Físicos
                 </h3>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="heightCm"
-                      className="font-semibold text-[#C2A537]"
-                    >
-                      Altura (cm)
-                    </Label>
-                    <Input
-                      id="heightCm"
-                      name="heightCm"
-                      type="number"
-                      className="border-slate-600 bg-slate-800 text-white"
-                      placeholder="175"
-                    />
+                <div className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="heightCm"
+                        className="font-semibold text-[#C2A537]"
+                      >
+                        Altura (cm)
+                      </Label>
+                      <Input
+                        id="heightCm"
+                        name="heightCm"
+                        type="number"
+                        className="border-slate-600 bg-slate-800 text-white"
+                        placeholder="175"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="weightKg"
+                        className="font-semibold text-[#C2A537]"
+                      >
+                        Peso (kg)
+                      </Label>
+                      <Input
+                        id="weightKg"
+                        name="weightKg"
+                        type="number"
+                        step="0.1"
+                        className="border-slate-600 bg-slate-800 text-white"
+                        placeholder="70.5"
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="weightKg"
-                      className="font-semibold text-[#C2A537]"
-                    >
-                      Peso (kg)
-                    </Label>
-                    <Input
-                      id="weightKg"
-                      name="weightKg"
-                      type="number"
-                      step="0.1"
-                      className="border-slate-600 bg-slate-800 text-white"
-                      placeholder="70.5"
-                    />
+
+                  <div>
+                    <h4 className="mb-3 font-semibold text-[#C2A537]">Medidas de Dobras Cutâneas (mm)</h4>
+                    <div className="grid gap-4 md:grid-cols-3">
+                      {selectedGender === "masculino" ? (
+                        <>
+                          <div className="space-y-2">
+                            <Label htmlFor="chestFold">Peitoral</Label>
+                            <Input
+                              id="chestFold"
+                              name="chestFold"
+                              type="number"
+                              step="0.1"
+                              className="border-slate-600 bg-slate-800 text-white"
+                              onChange={(e) => {
+                                const chest = parseFloat(e.target.value);
+                                const abdominal = parseFloat((document.getElementById("abdominalFold") as HTMLInputElement)?.value || "0");
+                                const thigh = parseFloat((document.getElementById("thighFold") as HTMLInputElement)?.value || "0");
+                                if (chest && abdominal && thigh && calculatedAge) {
+                                  calculateBodyFat(selectedGender, calculatedAge, chest, abdominal, thigh);
+                                }
+                              }}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="abdominalFold">Abdominal</Label>
+                            <Input
+                              id="abdominalFold"
+                              name="abdominalFold"
+                              type="number"
+                              step="0.1"
+                              className="border-slate-600 bg-slate-800 text-white"
+                              onChange={(e) => {
+                                const abdominal = parseFloat(e.target.value);
+                                const chest = parseFloat((document.getElementById("chestFold") as HTMLInputElement)?.value || "0");
+                                const thigh = parseFloat((document.getElementById("thighFold") as HTMLInputElement)?.value || "0");
+                                if (chest && abdominal && thigh && calculatedAge) {
+                                  calculateBodyFat(selectedGender, calculatedAge, chest, abdominal, thigh);
+                                }
+                              }}
+                            />
+                          </div>
+                        </>
+                      ) : selectedGender === "feminino" ? (
+                        <>
+                          <div className="space-y-2">
+                            <Label htmlFor="tricepsFold">Tríceps</Label>
+                            <Input
+                              id="tricepsFold"
+                              name="tricepsFold"
+                              type="number"
+                              step="0.1"
+                              className="border-slate-600 bg-slate-800 text-white"
+                              onChange={(e) => {
+                                const triceps = parseFloat(e.target.value);
+                                const suprailiac = parseFloat((document.getElementById("suprailiacFold") as HTMLInputElement)?.value || "0");
+                                const thigh = parseFloat((document.getElementById("thighFold") as HTMLInputElement)?.value || "0");
+                                if (triceps && suprailiac && thigh && calculatedAge) {
+                                  calculateBodyFat(selectedGender, calculatedAge, triceps, suprailiac, thigh);
+                                }
+                              }}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="suprailiacFold">Suprailíaca</Label>
+                            <Input
+                              id="suprailiacFold"
+                              name="suprailiacFold"
+                              type="number"
+                              step="0.1"
+                              className="border-slate-600 bg-slate-800 text-white"
+                              onChange={(e) => {
+                                const suprailiac = parseFloat(e.target.value);
+                                const triceps = parseFloat((document.getElementById("tricepsFold") as HTMLInputElement)?.value || "0");
+                                const thigh = parseFloat((document.getElementById("thighFold") as HTMLInputElement)?.value || "0");
+                                if (triceps && suprailiac && thigh && calculatedAge) {
+                                  calculateBodyFat(selectedGender, calculatedAge, triceps, suprailiac, thigh);
+                                }
+                              }}
+                            />
+                          </div>
+                        </>
+                      ) : null}
+                      {selectedGender && (
+                        <div className="space-y-2">
+                          <Label htmlFor="thighFold">Coxa</Label>
+                          <Input
+                            id="thighFold"
+                            name="thighFold"
+                            type="number"
+                            step="0.1"
+                            className="border-slate-600 bg-slate-800 text-white"
+                            onChange={(e) => {
+                              const thigh = parseFloat(e.target.value);
+                              if (selectedGender === "masculino") {
+                                const chest = parseFloat((document.getElementById("chestFold") as HTMLInputElement)?.value || "0");
+                                const abdominal = parseFloat((document.getElementById("abdominalFold") as HTMLInputElement)?.value || "0");
+                                if (chest && abdominal && thigh && calculatedAge) {
+                                  calculateBodyFat(selectedGender, calculatedAge, chest, abdominal, thigh);
+                                }
+                              } else {
+                                const triceps = parseFloat((document.getElementById("tricepsFold") as HTMLInputElement)?.value || "0");
+                                const suprailiac = parseFloat((document.getElementById("suprailiacFold") as HTMLInputElement)?.value || "0");
+                                if (triceps && suprailiac && thigh && calculatedAge) {
+                                  calculateBodyFat(selectedGender, calculatedAge, triceps, suprailiac, thigh);
+                                }
+                              }
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                    {bodyFatPercentage !== null && (
+                      <div className="mt-4 rounded-md border border-[#C2A537] bg-[#C2A537]/10 p-3">
+                        <p className="text-lg font-semibold text-[#C2A537]">
+                          Percentual de Gordura: {bodyFatPercentage}%
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -748,6 +1000,14 @@ export function AdministrativeTab() {
                     placeholder="Qualquer informação adicional relevante"
                   />
                 </div>
+              </div>
+
+              {/* Histórico de Medições */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-white">
+                  Histórico de Medições
+                </h3>
+                <BodyMeasurementsHistoryView userId={""} />
               </div>
 
               {/* Botão de Submit */}

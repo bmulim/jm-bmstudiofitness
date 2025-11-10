@@ -92,6 +92,7 @@ export interface FormState {
     email: string;
     password: string;
   };
+  createdUserId?: string;
 }
 
 export async function createAlunoAction(
@@ -237,6 +238,7 @@ export async function createAlunoAction(
         email: validatedData.email,
         password,
       },
+      createdUserId: result.userId,
     };
   } catch (error) {
     console.error("Erro ao cadastrar aluno:", error);
