@@ -44,12 +44,14 @@ import { CreateUserData, User, USER_ROLES, UserRole } from "@/types/user";
 interface UserManagementTabProps {
   users: User[];
   onCreateUser?: (data: CreateUserData) => Promise<void>;
+  onDeleteUser?: (userId: string) => Promise<void>;
   isLoading?: boolean;
 }
 
 export function UserManagementTab({
   users = [],
   onCreateUser,
+  onDeleteUser,
   isLoading = false,
 }: UserManagementTabProps) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -155,14 +157,22 @@ export function UserManagementTab({
             setActionLoading(true);
             console.log("🔄 Executando delete para usuário:", user.id);
 
-            const result = await deleteStudentAction(user.id);
-
-            if (result.success) {
-              showSuccessToast(`Usuário "${user.name}" excluído com sucesso!`);
-              // Recarregar a página para atualizar a lista
-              window.location.reload();
+            // If a parent provided a delete handler, prefer that (keeps container in control)
+            if (typeof onDeleteUser === "function") {
+              await onDeleteUser(user.id);
+              // parent handler should handle state update/notifications
             } else {
-              showErrorToast(result.error || "Erro ao excluir usuário");
+              const result = await deleteStudentAction(user.id);
+
+              if (result.success) {
+                showSuccessToast(
+                  `Usuário "${user.name}" excluído com sucesso!`,
+                );
+                // Recarregar a página para atualizar a lista
+                window.location.reload();
+              } else {
+                showErrorToast(result.error || "Erro ao excluir usuário");
+              }
             }
           } catch (error) {
             console.error("❌ Erro ao excluir usuário:", error);
@@ -175,7 +185,7 @@ export function UserManagementTab({
         console.error("❌ Erro no processo de confirmação:", error);
       }
     },
-    [confirm],
+    [confirm, onDeleteUser],
   );
 
   const handleEditUser = useCallback(async (user: User) => {

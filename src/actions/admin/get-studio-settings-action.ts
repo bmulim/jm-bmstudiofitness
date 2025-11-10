@@ -48,6 +48,13 @@ export async function getStudioSettingsAction(): Promise<StudioSettings> {
         termsAndConditions: null,
         privacyPolicy: null,
         cancellationPolicy: null,
+        carouselImage1: "/gym1.jpg",
+        carouselImage2: "/gym2.jpg",
+        carouselImage3: "/gym3.jpg",
+        carouselImage4: null,
+        carouselImage5: null,
+        carouselImage6: null,
+        carouselImage7: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };

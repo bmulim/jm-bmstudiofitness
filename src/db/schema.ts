@@ -390,6 +390,15 @@ export const studioSettingsTable = pgTable("tb_studio_settings", {
   privacyPolicy: text("privacy_policy"),
   cancellationPolicy: text("cancellation_policy"),
 
+  // Imagens do carrossel da página inicial (máximo 7)
+  carouselImage1: text("carousel_image_1").default("/gym1.jpg"),
+  carouselImage2: text("carousel_image_2").default("/gym2.jpg"),
+  carouselImage3: text("carousel_image_3").default("/gym3.jpg"),
+  carouselImage4: text("carousel_image_4"),
+  carouselImage5: text("carousel_image_5"),
+  carouselImage6: text("carousel_image_6"),
+  carouselImage7: text("carousel_image_7"),
+
   // Metadados
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

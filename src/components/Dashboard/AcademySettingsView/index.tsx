@@ -5,6 +5,7 @@ import {
   Clock,
   DollarSign,
   FileText,
+  Image as ImageIcon,
   Loader2,
   Save,
   Settings,
@@ -22,13 +23,43 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+// Função para validar se é uma URL válida de imagem
+const isValidImageUrl = (url: string): boolean => {
+  if (!url || url.trim() === "") return false;
+
+  try {
+    const urlObj = new URL(url.trim());
+    const pathname = urlObj.pathname.toLowerCase();
+
+    // Verifica se termina com extensão de imagem válida
+    const validExtensions = [
+      ".jpg",
+      ".jpeg",
+      ".png",
+      ".gif",
+      ".webp",
+      ".svg",
+      ".bmp",
+    ];
+    const hasValidExtension = validExtensions.some((ext) =>
+      pathname.endsWith(ext),
+    );
+
+    // Aceita URLs locais (começam com /) ou URLs com extensão de imagem
+    return pathname.startsWith("/") || hasValidExtension;
+  } catch {
+    // Se começar com / é uma URL local válida
+    return url.trim().startsWith("/");
+  }
+};
+
 interface AcademySettingsViewProps {
   onBack: () => void;
 }
 
 export function AcademySettingsView({ onBack }: AcademySettingsViewProps) {
   const [activeTab, setActiveTab] = useState<
-    "general" | "hours" | "pricing" | "policies"
+    "general" | "hours" | "pricing" | "policies" | "carousel"
   >("general");
   const [settings, setSettings] = useState<StudioSettings | null>(null);
   const [loading, setLoading] = useState(true);
@@ -87,6 +118,13 @@ export function AcademySettingsView({ onBack }: AcademySettingsViewProps) {
         termsAndConditions: settings.termsAndConditions,
         privacyPolicy: settings.privacyPolicy,
         cancellationPolicy: settings.cancellationPolicy,
+        carouselImage1: settings.carouselImage1?.trim() || null,
+        carouselImage2: settings.carouselImage2?.trim() || null,
+        carouselImage3: settings.carouselImage3?.trim() || null,
+        carouselImage4: settings.carouselImage4?.trim() || null,
+        carouselImage5: settings.carouselImage5?.trim() || null,
+        carouselImage6: settings.carouselImage6?.trim() || null,
+        carouselImage7: settings.carouselImage7?.trim() || null,
       });
 
       if (result.success) {
@@ -126,6 +164,12 @@ export function AcademySettingsView({ onBack }: AcademySettingsViewProps) {
       label: "Políticas",
       icon: FileText,
       description: "Regras e políticas",
+    },
+    {
+      id: "carousel",
+      label: "Carrossel",
+      icon: ImageIcon,
+      description: "Imagens do carrossel da página inicial",
     },
   ];
 
@@ -672,6 +716,347 @@ export function AcademySettingsView({ onBack }: AcademySettingsViewProps) {
                     placeholder="Descreva como os dados dos alunos são tratados..."
                     className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-white focus:border-[#C2A537] focus:outline-none"
                   />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* Carousel Settings */}
+      {activeTab === "carousel" && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-6"
+        >
+          <Card className="border-[#C2A537]/30 bg-black/40 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-[#C2A537]">
+                <ImageIcon className="h-5 w-5" />
+                Imagens do Carrossel
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-slate-400">
+                Configure até 7 imagens para o carrossel da página inicial.
+                Insira as URLs das imagens.
+              </p>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-[#C2A537]">Imagem 1</Label>
+                  <Input
+                    type="text"
+                    value={settings.carouselImage1 || ""}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        carouselImage1: e.target.value,
+                      })
+                    }
+                    placeholder="URL da imagem 1"
+                    className="border-slate-600 bg-slate-800 text-white focus:border-[#C2A537]"
+                  />
+                  {settings.carouselImage1 && (
+                    <>
+                      {isValidImageUrl(settings.carouselImage1) ? (
+                        <div className="mt-2 h-32 w-full overflow-hidden rounded-md">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={settings.carouselImage1}
+                            alt="Preview 1"
+                            className="h-full w-full object-cover"
+                            onError={(e) => {
+                              console.error(
+                                "Erro ao carregar preview 1:",
+                                settings.carouselImage1,
+                              );
+                              (e.target as HTMLImageElement).src =
+                                "/placeholder-gym.jpg";
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="mt-2 rounded-md border border-red-500 bg-red-500/10 p-3">
+                          <p className="text-sm text-red-400">
+                            ⚠️ URL inválida. Use uma URL direta de imagem que
+                            termine com .jpg, .png, .gif, etc.
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-[#C2A537]">Imagem 2</Label>
+                  <Input
+                    type="text"
+                    value={settings.carouselImage2 || ""}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        carouselImage2: e.target.value,
+                      })
+                    }
+                    placeholder="URL da imagem 2"
+                    className="border-slate-600 bg-slate-800 text-white focus:border-[#C2A537]"
+                  />
+                  {settings.carouselImage2 && (
+                    <>
+                      {isValidImageUrl(settings.carouselImage2) ? (
+                        <div className="mt-2 h-32 w-full overflow-hidden rounded-md">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={settings.carouselImage2}
+                            alt="Preview 2"
+                            className="h-full w-full object-cover"
+                            onError={(e) => {
+                              console.error(
+                                "Erro ao carregar preview 2:",
+                                settings.carouselImage2,
+                              );
+                              (e.target as HTMLImageElement).src =
+                                "/placeholder-gym.jpg";
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="mt-2 rounded-md border border-red-500 bg-red-500/10 p-3">
+                          <p className="text-sm text-red-400">
+                            ⚠️ URL inválida. Use uma URL direta de imagem que
+                            termine com .jpg, .png, .gif, etc.
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-[#C2A537]">Imagem 3</Label>
+                  <Input
+                    type="text"
+                    value={settings.carouselImage3 || ""}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        carouselImage3: e.target.value,
+                      })
+                    }
+                    placeholder="URL da imagem 3"
+                    className="border-slate-600 bg-slate-800 text-white focus:border-[#C2A537]"
+                  />
+                  {settings.carouselImage3 && (
+                    <>
+                      {isValidImageUrl(settings.carouselImage3) ? (
+                        <div className="mt-2 h-32 w-full overflow-hidden rounded-md">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={settings.carouselImage3}
+                            alt="Preview 3"
+                            className="h-full w-full object-cover"
+                            onError={(e) => {
+                              console.error(
+                                "Erro ao carregar preview 3:",
+                                settings.carouselImage3,
+                              );
+                              (e.target as HTMLImageElement).src =
+                                "/placeholder-gym.jpg";
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="mt-2 rounded-md border border-red-500 bg-red-500/10 p-3">
+                          <p className="text-sm text-red-400">
+                            ⚠️ URL inválida. Use uma URL direta de imagem que
+                            termine com .jpg, .png, .gif, etc.
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-[#C2A537]">Imagem 4 (opcional)</Label>
+                  <Input
+                    type="text"
+                    value={settings.carouselImage4 || ""}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        carouselImage4: e.target.value,
+                      })
+                    }
+                    placeholder="URL da imagem 4"
+                    className="border-slate-600 bg-slate-800 text-white focus:border-[#C2A537]"
+                  />
+                  {settings.carouselImage4 && (
+                    <>
+                      {isValidImageUrl(settings.carouselImage4) ? (
+                        <div className="mt-2 h-32 w-full overflow-hidden rounded-md">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={settings.carouselImage4}
+                            alt="Preview 4"
+                            className="h-full w-full object-cover"
+                            onError={(e) => {
+                              console.error(
+                                "Erro ao carregar preview 4:",
+                                settings.carouselImage4,
+                              );
+                              (e.target as HTMLImageElement).src =
+                                "/placeholder-gym.jpg";
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="mt-2 rounded-md border border-red-500 bg-red-500/10 p-3">
+                          <p className="text-sm text-red-400">
+                            ⚠️ URL inválida. Use uma URL direta de imagem que
+                            termine com .jpg, .png, .gif, etc.
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-[#C2A537]">Imagem 5 (opcional)</Label>
+                  <Input
+                    type="text"
+                    value={settings.carouselImage5 || ""}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        carouselImage5: e.target.value,
+                      })
+                    }
+                    placeholder="URL da imagem 5"
+                    className="border-slate-600 bg-slate-800 text-white focus:border-[#C2A537]"
+                  />
+                  {settings.carouselImage5 && (
+                    <>
+                      {isValidImageUrl(settings.carouselImage5) ? (
+                        <div className="mt-2 h-32 w-full overflow-hidden rounded-md">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={settings.carouselImage5}
+                            alt="Preview 5"
+                            className="h-full w-full object-cover"
+                            onError={(e) => {
+                              console.error(
+                                "Erro ao carregar preview 5:",
+                                settings.carouselImage5,
+                              );
+                              (e.target as HTMLImageElement).src =
+                                "/placeholder-gym.jpg";
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="mt-2 rounded-md border border-red-500 bg-red-500/10 p-3">
+                          <p className="text-sm text-red-400">
+                            ⚠️ URL inválida. Use uma URL direta de imagem que
+                            termine com .jpg, .png, .gif, etc.
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-[#C2A537]">Imagem 6 (opcional)</Label>
+                  <Input
+                    type="text"
+                    value={settings.carouselImage6 || ""}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        carouselImage6: e.target.value,
+                      })
+                    }
+                    placeholder="URL da imagem 6"
+                    className="border-slate-600 bg-slate-800 text-white focus:border-[#C2A537]"
+                  />
+                  {settings.carouselImage6 && (
+                    <>
+                      {isValidImageUrl(settings.carouselImage6) ? (
+                        <div className="mt-2 h-32 w-full overflow-hidden rounded-md">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={settings.carouselImage6}
+                            alt="Preview 6"
+                            className="h-full w-full object-cover"
+                            onError={(e) => {
+                              console.error(
+                                "Erro ao carregar preview 6:",
+                                settings.carouselImage6,
+                              );
+                              (e.target as HTMLImageElement).src =
+                                "/placeholder-gym.jpg";
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="mt-2 rounded-md border border-red-500 bg-red-500/10 p-3">
+                          <p className="text-sm text-red-400">
+                            ⚠️ URL inválida. Use uma URL direta de imagem que
+                            termine com .jpg, .png, .gif, etc.
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-[#C2A537]">Imagem 7 (opcional)</Label>
+                  <Input
+                    type="text"
+                    value={settings.carouselImage7 || ""}
+                    onChange={(e) =>
+                      setSettings({
+                        ...settings,
+                        carouselImage7: e.target.value,
+                      })
+                    }
+                    placeholder="URL da imagem 7"
+                    className="border-slate-600 bg-slate-800 text-white focus:border-[#C2A537]"
+                  />
+                  {settings.carouselImage7 && (
+                    <>
+                      {isValidImageUrl(settings.carouselImage7) ? (
+                        <div className="mt-2 h-32 w-full overflow-hidden rounded-md">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={settings.carouselImage7}
+                            alt="Preview 7"
+                            className="h-full w-full object-cover"
+                            onError={(e) => {
+                              console.error(
+                                "Erro ao carregar preview 7:",
+                                settings.carouselImage7,
+                              );
+                              (e.target as HTMLImageElement).src =
+                                "/placeholder-gym.jpg";
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="mt-2 rounded-md border border-red-500 bg-red-500/10 p-3">
+                          <p className="text-sm text-red-400">
+                            ⚠️ URL inválida. Use uma URL direta de imagem que
+                            termine com .jpg, .png, .gif, etc.
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             </CardContent>
