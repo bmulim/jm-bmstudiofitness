@@ -14,10 +14,12 @@ export function Button({
   ...props
 }: ButtonProps) {
   const buttonVariants: Record<ButtonVariants, string> = {
-    default: clsx("bg-[#C0A231] text-black hover:bg-[#E3C453] "),
-    ghost: clsx("bg-[#E0D39f] text-[#46443b]"),
-    danger: clsx("bg-red-500 text-white hover:bg-red-600"),
-    outline: clsx("border border-current bg-transparent hover:bg-current/10"),
+    default: clsx("bg-[#C2A537]/20 text-[#C2A537] hover:bg-[#C2A537]/30"),
+    ghost: clsx("bg-slate-800/30 text-slate-200 hover:bg-slate-800/50"),
+    danger: clsx("bg-red-900/20 text-red-400 hover:bg-red-900/30"),
+    outline: clsx(
+      "border border-slate-700 bg-slate-800/30 text-slate-200 hover:bg-slate-800/50",
+    ),
   };
 
   const sizeVariants: Record<ButtonSize, string> = {

@@ -50,6 +50,7 @@ export const personalDataTable = pgTable("tb_personal_data", {
   cpf: varchar("cpf", { length: 11 }).notNull().unique(),
   email: text("email").notNull().unique(),
   bornDate: date("born_date").notNull(),
+  sex: text("sex").notNull().$type<"masculino" | "feminino">(),
   address: text("address").notNull(),
   telephone: text("telephone").notNull(),
 });

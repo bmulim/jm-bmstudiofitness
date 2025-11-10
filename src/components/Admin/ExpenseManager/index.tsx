@@ -349,7 +349,8 @@ export function ExpenseTable() {
         <div className="mb-4">
           <Button
             onClick={() => setShowReport(false)}
-            className="bg-[#C2A537]/20 text-[#C2A537] hover:bg-[#C2A537]/30"
+            variant="outline"
+            className="border-slate-700 bg-slate-800/30 text-[#C2A537] hover:bg-slate-800/50 hover:text-[#C2A537]"
           >
             Voltar para Lista
           </Button>

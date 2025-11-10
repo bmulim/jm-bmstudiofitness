@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 
+import { generateExpensePDF } from "./ExpensePDFReport";
 import type { Expense } from "./types";
 
 interface ExpenseReportProps {
@@ -32,13 +33,10 @@ export function ExpenseReport({ expenses }: ExpenseReportProps) {
   const generatePDF = async () => {
     try {
       setGeneratingPDF(true);
-
-      // Vamos implementar a geração do PDF em breve
-      // Por enquanto, apenas simular
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
+      generateExpensePDF(expenses);
       toast.success("Relatório gerado com sucesso!");
     } catch (error) {
+      console.error("Erro ao gerar PDF:", error);
       toast.error("Erro ao gerar relatório");
     } finally {
       setGeneratingPDF(false);

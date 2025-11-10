@@ -1,5 +1,6 @@
 "use server";
 
+import { hash } from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
@@ -17,9 +18,8 @@ import {
   getTokenExpirationDate,
   sendConfirmationEmail,
 } from "@/lib/email";
-import { convertToCents, isValidDueDate } from "@/lib/payment-utils";
 import { generateSecurePassword } from "@/lib/password-utils";
-import { hash } from "bcryptjs";
+import { convertToCents, isValidDueDate } from "@/lib/payment-utils";
 import { UserRole } from "@/types/user-roles";
 
 // Schema de validação para o cadastro do aluno
@@ -30,6 +30,7 @@ const cadastroAlunoSchema = z.object({
   // Dados pessoais
   cpf: z.string().regex(/^\d{11}$/, "CPF deve ter 11 dígitos"),
   email: z.string().email("Email deve ter um formato válido"),
+  sex: z.enum(["masculino", "feminino"]),
   bornDate: z.string().refine((date) => {
     const parsedDate = new Date(date);
     const today = new Date();
@@ -161,6 +162,7 @@ export async function createAlunoAction(
         userId: newUser.id,
         cpf: validatedData.cpf,
         email: validatedData.email,
+        sex: validatedData.sex,
         bornDate: validatedData.bornDate,
         address: validatedData.address,
         telephone: validatedData.telephone,

@@ -1,6 +1,7 @@
 "use client";
 import {
   CalendarIcon,
+  DollarSign,
   FileText,
   Save,
   Settings,
@@ -41,6 +42,21 @@ export function AdministrativeTab() {
   const [showSettings, setShowSettings] = useState(false);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
+  const [calculatedAge, setCalculatedAge] = useState<number | null>(null);
+
+  const calculateAge = (bornDate: string) => {
+    const today = new Date();
+    const birthDate = new Date(bornDate);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const month = today.getMonth() - birthDate.getMonth();
+
+    if (month < 0 || (month === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+
+    setCalculatedAge(age);
+    return age;
+  };
   const [showUpToDateModal, setShowUpToDateModal] = useState(false);
   const [showOverdueModal, setShowOverdueModal] = useState(false);
   const [studentsData, setStudentsData] = useState<StudentPaymentData[]>([]);
@@ -191,10 +207,13 @@ export function AdministrativeTab() {
             <form action={formAction} className="space-y-6">
               {/* Dados Pessoais */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-white">
+                <h3 className="flex items-center gap-2 text-lg font-semibold text-white">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#C2A537]">
+                    <Users className="h-4 w-4 text-black" />
+                  </div>
                   Dados Pessoais
                 </h3>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-3">
                   <div className="space-y-2">
                     <Label
                       htmlFor="name"
@@ -243,6 +262,24 @@ export function AdministrativeTab() {
                   </div>
                   <div className="space-y-2">
                     <Label
+                      htmlFor="sex"
+                      className="font-semibold text-[#C2A537]"
+                    >
+                      Sexo *
+                    </Label>
+                    <select
+                      id="sex"
+                      name="sex"
+                      required
+                      className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-white focus:border-[#C2A537] focus:outline-none"
+                    >
+                      <option value="">Selecione</option>
+                      <option value="masculino">Masculino</option>
+                      <option value="feminino">Feminino</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label
                       htmlFor="telephone"
                       className="font-semibold text-[#C2A537]"
                     >
@@ -270,32 +307,15 @@ export function AdministrativeTab() {
                         type="date"
                         required
                         className="border-slate-600 bg-slate-800 text-white"
+                        onChange={(e) => calculateAge(e.target.value)}
                       />
                       <CalendarIcon className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="bloodType"
-                      className="font-semibold text-[#C2A537]"
-                    >
-                      Tipo Sanguíneo
-                    </Label>
-                    <select
-                      id="bloodType"
-                      name="bloodType"
-                      className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-white focus:border-[#C2A537] focus:outline-none"
-                    >
-                      <option value="">Selecione</option>
-                      <option value="A+">A+</option>
-                      <option value="A-">A-</option>
-                      <option value="B+">B+</option>
-                      <option value="B-">B-</option>
-                      <option value="AB+">AB+</option>
-                      <option value="AB-">AB-</option>
-                      <option value="O+">O+</option>
-                      <option value="O-">O-</option>
-                    </select>
+                    {calculatedAge !== null && (
+                      <p className="mt-1 text-sm text-slate-400">
+                        Idade: {calculatedAge} anos
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -317,7 +337,10 @@ export function AdministrativeTab() {
 
               {/* Dados Financeiros */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-white">
+                <h3 className="flex items-center gap-2 text-lg font-semibold text-white">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#C2A537]">
+                    <DollarSign className="h-4 w-4 text-black" />
+                  </div>
                   Dados Financeiros
                 </h3>
                 <div className="grid gap-4 md:grid-cols-3">
@@ -382,7 +405,22 @@ export function AdministrativeTab() {
 
               {/* Dados Físicos */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-white">
+                <h3 className="flex items-center gap-2 text-lg font-semibold text-white">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#C2A537]">
+                    <svg
+                      className="h-4 w-4 text-black"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 7h16M4 12h16m-7 5h7"
+                      />
+                    </svg>
+                  </div>
                   Dados Físicos
                 </h3>
                 <div className="grid gap-4 md:grid-cols-2">
@@ -422,7 +460,22 @@ export function AdministrativeTab() {
 
               {/* Histórico de Saúde */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-white">
+                <h3 className="flex items-center gap-2 text-lg font-semibold text-white">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#C2A537]">
+                    <svg
+                      className="h-4 w-4 text-black"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </div>
                   Histórico de Saúde
                 </h3>
                 <div className="grid gap-4 md:grid-cols-2">
@@ -476,17 +529,55 @@ export function AdministrativeTab() {
                       placeholder="Descreva lesões anteriores ou atuais"
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="bloodType"
+                      className="font-semibold text-[#C2A537]"
+                    >
+                      Tipo Sanguíneo
+                    </Label>
+                    <select
+                      id="bloodType"
+                      name="bloodType"
+                      className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-white focus:border-[#C2A537] focus:outline-none"
+                    >
+                      <option value="">Selecione</option>
+                      <option value="A+">A+</option>
+                      <option value="A-">A-</option>
+                      <option value="B+">B+</option>
+                      <option value="B-">B-</option>
+                      <option value="AB+">AB+</option>
+                      <option value="AB-">AB-</option>
+                      <option value="O+">O+</option>
+                      <option value="O-">O-</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
               {/* Histórico Esportivo */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-white">
+                <h3 className="flex items-center gap-2 text-lg font-semibold text-white">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#C2A537]">
+                    <svg
+                      className="h-4 w-4 text-black"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 10V3L4 14h7v7l9-11h-7z"
+                      />
+                    </svg>
+                  </div>
                   Histórico Esportivo
                 </h3>
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <Label>Praticou esportes antes?</Label>
+                    <Label>Praticou alguma atividade física?</Label>
                     <div className="flex gap-4">
                       <label className="flex items-center">
                         <input
@@ -494,6 +585,15 @@ export function AdministrativeTab() {
                           name="hasPracticedSports"
                           value="true"
                           className="mr-2"
+                          onChange={(e) => {
+                            const practicesSports = document.getElementById(
+                              "hasPracticedSportsInput",
+                            );
+                            if (practicesSports) {
+                              practicesSports.style.display =
+                                e.target.value === "true" ? "block" : "none";
+                            }
+                          }}
                         />
                         <span className="text-white">Sim</span>
                       </label>
@@ -503,13 +603,22 @@ export function AdministrativeTab() {
                           name="hasPracticedSports"
                           value="false"
                           className="mr-2"
+                          onChange={(e) => {
+                            const practicesSports = document.getElementById(
+                              "hasPracticedSportsInput",
+                            );
+                            if (practicesSports) {
+                              practicesSports.style.display =
+                                e.target.value === "true" ? "block" : "none";
+                            }
+                          }}
                         />
                         <span className="text-white">Não</span>
                       </label>
                     </div>
                   </div>
-                  <div>
-                    <Label htmlFor="lastExercise">Último Exercício</Label>
+                  <div id="hasPracticedSportsInput" style={{ display: "none" }}>
+                    <Label htmlFor="lastExercise">Descreva</Label>
                     <Input
                       id="lastExercise"
                       name="lastExercise"
@@ -532,7 +641,22 @@ export function AdministrativeTab() {
 
               {/* Hábitos e Rotina */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-white">
+                <h3 className="flex items-center gap-2 text-lg font-semibold text-white">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#C2A537]">
+                    <svg
+                      className="h-4 w-4 text-black"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </div>
                   Hábitos e Rotina
                 </h3>
                 <div className="grid gap-4 md:grid-cols-2">
@@ -567,6 +691,14 @@ export function AdministrativeTab() {
                           name="useSupplements"
                           value="true"
                           className="mr-2"
+                          onChange={(e) => {
+                            const supplementsInput =
+                              document.getElementById("supplementsInput");
+                            if (supplementsInput) {
+                              supplementsInput.style.display =
+                                e.target.value === "true" ? "block" : "none";
+                            }
+                          }}
                         />
                         <span className="text-white">Sim</span>
                       </label>
@@ -576,12 +708,20 @@ export function AdministrativeTab() {
                           name="useSupplements"
                           value="false"
                           className="mr-2"
+                          onChange={(e) => {
+                            const supplementsInput =
+                              document.getElementById("supplementsInput");
+                            if (supplementsInput) {
+                              supplementsInput.style.display =
+                                e.target.value === "true" ? "block" : "none";
+                            }
+                          }}
                         />
                         <span className="text-white">Não</span>
                       </label>
                     </div>
                   </div>
-                  <div>
+                  <div id="supplementsInput" style={{ display: "none" }}>
                     <Label htmlFor="whatSupplements">Quais Suplementos?</Label>
                     <Input
                       id="whatSupplements"
