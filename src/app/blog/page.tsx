@@ -48,29 +48,16 @@ export default function BlogPage() {
         console.log("🔍 Buscando posts publicados...");
         const fetchedPosts = await getPublishedPostsAction();
         console.log("✅ Posts encontrados:", fetchedPosts.length);
-        console.log("📝 Posts:", fetchedPosts);
         setPosts(fetchedPosts);
-        console.log("🔄 Estado atualizado com", fetchedPosts.length, "posts");
       } catch (error) {
         console.error("❌ Error loading posts:", error);
       } finally {
         setLoading(false);
-        console.log("⏹️ Loading finalizado");
       }
     }
 
     loadPosts();
   }, []);
-
-  // Log sempre que posts ou loading mudar
-  useEffect(() => {
-    console.log(
-      "📊 Estado atual - Loading:",
-      loading,
-      "| Posts:",
-      posts.length,
-    );
-  }, [posts, loading]);
 
   // Variantes de animação
   const containerVariants = {
@@ -222,14 +209,13 @@ export default function BlogPage() {
               </motion.div>
             </div>
           ) : (
-            <motion.div
-              variants={containerVariants}
-              className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:gap-8 lg:grid-cols-3"
-            >
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:gap-8 lg:grid-cols-3">
               {posts.map((post) => (
                 <motion.div
                   key={post.id}
                   variants={cardVariants}
+                  initial="hidden"
+                  animate="visible"
                   transition={{
                     duration: 0.6,
                     ease: "easeOut",
@@ -306,7 +292,7 @@ export default function BlogPage() {
                   </Link>
                 </motion.div>
               ))}
-            </motion.div>
+            </div>
           )}
         </div>
       </motion.section>
