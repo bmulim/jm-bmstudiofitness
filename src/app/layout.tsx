@@ -35,9 +35,85 @@ const anton = Anton({
 });
 
 export const metadata: Metadata = {
-  title: "JM Fitness Studio",
+  title: {
+    default: "JM Fitness Studio | Estúdio de Saúde e Bem-Estar",
+    template: "%s | JM Fitness Studio",
+  },
   description:
-    "Transforme sua vida no JM Fitness Studio. Ambiente acolhedor e profissional dedicado à sua saúde, bem-estar e conquista dos seus objetivos fitness. Venha fazer parte da nossa família fitness!",
+    "JM Fitness Studio em Duque de Caxias - RJ. Estúdio especializado em saúde, bem-estar e qualidade de vida. Treinos personalizados, acompanhamento profissional e ambiente acolhedor. Cuide da sua saúde conosco!",
+  keywords: [
+    "estúdio fitness",
+    "saúde e bem-estar",
+    "treino personalizado",
+    "fitness",
+    "Duque de Caxias",
+    "RJ",
+    "JM Fitness Studio",
+    "qualidade de vida",
+    "saúde",
+    "bem-estar",
+    "exercícios personalizados",
+    "estúdio 25 de agosto",
+    "personal trainer",
+    "acompanhamento fitness",
+  ],
+  authors: [{ name: "JM Fitness Studio" }],
+  creator: "JM Fitness Studio",
+  publisher: "JM Fitness Studio",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  icons: {
+    icon: [
+      {
+        url: "/favicon.svg",
+        type: "image/svg+xml",
+      },
+    ],
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
+  metadataBase: new URL("https://jmfitnessstudio.com.br"),
+  openGraph: {
+    title: "JM Fitness Studio | Estúdio de Saúde e Bem-Estar",
+    description:
+      "JM Fitness Studio em Duque de Caxias - RJ. Estúdio especializado em saúde, bem-estar e qualidade de vida. Treinos personalizados e acompanhamento profissional.",
+    url: "https://jmfitnessstudio.com.br",
+    siteName: "JM Fitness Studio",
+    images: [
+      {
+        url: "/favicon.svg",
+        width: 500,
+        height: 500,
+        alt: "JM Fitness Studio Logo",
+      },
+    ],
+    locale: "pt_BR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "JM Fitness Studio | Estúdio de Saúde e Bem-Estar",
+    description:
+      "JM Fitness Studio em Duque de Caxias - RJ. Estúdio especializado em saúde, bem-estar e qualidade de vida. Treinos personalizados e acompanhamento profissional.",
+    images: ["/favicon.svg"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  verification: {
+    google: "verification_token", // Substituir pelo token real após verificar no Google Search Console
+  },
 };
 
 export const viewport = {
@@ -51,7 +127,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="pt-BR" className="h-full">
       <body
         className={clsx(
           `${geistSans.variable} ${geistMono.variable} ${oswald.variable} ${anton.variable} antialiased`,

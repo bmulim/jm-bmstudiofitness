@@ -18,6 +18,7 @@ import {
   studioExpensesTable,
   userConfirmationTokensTable,
   usersTable,
+  waitlistTable,
 } from "./schema";
 
 // ---- conexões ----
@@ -27,6 +28,7 @@ const db = drizzle(connectionString);
 async function main() {
   // Limpar dados existentes (ordem importante devido às foreign keys)
   await db.delete(userConfirmationTokensTable);
+  await db.delete(waitlistTable); // Deletar waitlist antes de users
   await db.delete(professorCheckInsTable);
   await db.delete(checkInTable);
   await db.delete(financialTable);

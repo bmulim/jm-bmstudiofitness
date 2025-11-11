@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Criar Administrador | BM Studio Fitness",
-  description: "Criação de novo usuário administrador",
+  title: "Criar Administrador | JM Fitness Studio",
+  description: "Criar novo usuário administrador",
 };
 
 export default function CreateAdminLayout({

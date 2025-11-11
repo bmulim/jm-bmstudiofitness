@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import image from "./app_ico-ft.png";
+import image from "./app_ico-ft.svg";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -191,7 +191,7 @@ export function Footer() {
                   transition={{ duration: 0.6 }}
                 >
                   <Image
-                    alt="BPM - Tech"
+                    alt="Corelayer"
                     src={image}
                     width={30}
                     height={30}
@@ -201,7 +201,7 @@ export function Footer() {
                 <div className="text-sm text-gray-400">
                   <span>Sistema desenvolvido pela </span>
                   <span className="font-semibold text-[#C2A537] transition-colors duration-300 hover:text-[#D4B547]">
-                    BGM Tecnologia Web
+                    Corelayer
                   </span>
                 </div>
               </Link>

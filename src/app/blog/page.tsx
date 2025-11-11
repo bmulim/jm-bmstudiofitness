@@ -45,17 +45,32 @@ export default function BlogPage() {
   useEffect(() => {
     async function loadPosts() {
       try {
+        console.log("🔍 Buscando posts publicados...");
         const fetchedPosts = await getPublishedPostsAction();
+        console.log("✅ Posts encontrados:", fetchedPosts.length);
+        console.log("📝 Posts:", fetchedPosts);
         setPosts(fetchedPosts);
+        console.log("🔄 Estado atualizado com", fetchedPosts.length, "posts");
       } catch (error) {
-        console.error("Error loading posts:", error);
+        console.error("❌ Error loading posts:", error);
       } finally {
         setLoading(false);
+        console.log("⏹️ Loading finalizado");
       }
     }
 
     loadPosts();
   }, []);
+
+  // Log sempre que posts ou loading mudar
+  useEffect(() => {
+    console.log(
+      "📊 Estado atual - Loading:",
+      loading,
+      "| Posts:",
+      posts.length,
+    );
+  }, [posts, loading]);
 
   // Variantes de animação
   const containerVariants = {
@@ -184,12 +199,26 @@ export default function BlogPage() {
                 transition={{ duration: 0.6 }}
               >
                 <h2 className="mb-4 text-2xl font-bold text-slate-400">
-                  Em breve, novos posts!
+                  Nenhum post encontrado
                 </h2>
-                <p className="text-slate-500">
-                  Estamos preparando conteúdo incrível para você. Volte em
-                  breve!
+                <p className="mb-6 text-slate-500">
+                  Não há posts publicados no momento. Execute o seed do banco de
+                  dados para criar posts de exemplo.
                 </p>
+                <div className="rounded-lg border border-slate-700 bg-slate-900/50 p-6 text-left">
+                  <h3 className="mb-3 text-lg font-semibold text-[#C2A537]">
+                    💡 Como adicionar posts:
+                  </h3>
+                  <ol className="space-y-2 text-sm text-slate-300">
+                    <li>1. No terminal, execute: npm run db:seed</li>
+                    <li>
+                      2. Ou acesse a área administrativa em /admin/dashboard
+                    </li>
+                    <li>
+                      3. Vá na aba &quot;Blog&quot; e crie posts manualmente
+                    </li>
+                  </ol>
+                </div>
               </motion.div>
             </div>
           ) : (

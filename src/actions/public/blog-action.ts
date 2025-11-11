@@ -8,6 +8,8 @@ import { categories, posts, postTags, tags } from "@/db/schema";
 // Função pública para obter posts publicados (sem verificação de admin)
 export async function getPublishedPostsAction() {
   try {
+    console.log("🔍 [SERVER] Iniciando busca de posts publicados...");
+
     const publishedPosts = await db
       .select({
         id: posts.id,
@@ -38,6 +40,18 @@ export async function getPublishedPostsAction() {
       .where(eq(posts.published, true))
       .orderBy(desc(posts.createdAt));
 
+    console.log(
+      `✅ [SERVER] Posts encontrados no DB: ${publishedPosts.length}`,
+    );
+    console.log(
+      `📝 [SERVER] Posts:`,
+      publishedPosts.map((p) => ({
+        id: p.id,
+        title: p.title,
+        published: p.published,
+      })),
+    );
+
     // Buscar tags para cada post
     const postsWithTags = await Promise.all(
       publishedPosts.map(async (post) => {
@@ -58,9 +72,10 @@ export async function getPublishedPostsAction() {
       }),
     );
 
+    console.log(`🏷️ [SERVER] Posts com tags: ${postsWithTags.length}`);
     return postsWithTags;
   } catch (error) {
-    console.error("Error fetching published posts:", error);
+    console.error("❌ [SERVER] Error fetching published posts:", error);
     throw new Error("Failed to fetch published posts");
   }
 }
