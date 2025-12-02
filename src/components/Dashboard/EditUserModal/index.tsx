@@ -110,9 +110,12 @@ export function EditUserModal({
   const shift = watch("shift");
 
   useEffect(() => {
+    console.log("📝 EditUserModal useEffect:", { isOpen, userId, userName, userRole, adminId });
     if (isOpen) {
       setIsFetching(true);
+      console.log("🔍 Buscando dados do usuário:", userId);
       getUserDataAction(userId).then((result) => {
+        console.log("📦 Resultado getUserDataAction:", result);
         if (result.success && result.data) {
           const data = result.data;
 

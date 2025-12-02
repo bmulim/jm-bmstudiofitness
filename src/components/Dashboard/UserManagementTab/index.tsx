@@ -189,11 +189,13 @@ export function UserManagementTab({
 
   const handleEditUser = useCallback(async (user: User) => {
     try {
+      console.log("🔧 handleEditUser chamado para:", user.name, "Role:", user.role);
       setUserToEdit(user);
       setIsEditModalOpen(true);
       setIsUserModalOpen(false); // Fechar modal de visualização
+      console.log("✅ Modal de edição aberto");
     } catch (error) {
-      console.error("Erro ao abrir modal de edição:", error);
+      console.error("❌ Erro ao abrir modal de edição:", error);
       showErrorToast("Erro ao abrir modal de edição");
     }
   }, []);
