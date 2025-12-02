@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getUserFromRequestEdge } from "@/lib/auth-edge";
 
+// MODO MANUTENÇÃO: Rotas permitidas durante manutenção
+const maintenanceAllowedPaths = ["/waitlist", "/admin"];
+
 // Rotas protegidas que requerem autenticação
 const protectedPaths = [
   "/admin",
@@ -26,6 +29,22 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   console.log(`🔍 Middleware v2 - Verificando rota: ${pathname}`);
+
+  // MODO MANUTENÇÃO: Bloqueia todas as rotas exceto /waitlist e /admin
+  const isMaintenanceAllowed = maintenanceAllowedPaths.some(
+    (path) => pathname.startsWith(path)
+  );
+
+  // Permite assets estáticos e API sempre
+  const isAssetOrApi =
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/api") ||
+    pathname.includes(".");
+
+  if (!isMaintenanceAllowed && !isAssetOrApi && pathname !== "/maintenance") {
+    console.log(`🚧 MODO MANUTENÇÃO - Redirecionando para /maintenance`);
+    return NextResponse.redirect(new URL("/maintenance", request.url));
+  }
 
   // Verifica se a rota está protegida primeiro
   const isProtected = protectedPaths.some((path) => pathname.startsWith(path));
