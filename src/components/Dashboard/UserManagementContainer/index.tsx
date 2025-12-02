@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import { getCurrentUserIdAction } from "@/actions/admin/get-current-user-id-action";
 import {
   createUserAction,
   deleteUserAction,
@@ -13,10 +14,18 @@ import { CreateUserData, User } from "@/types/user";
 export function UserManagementContainer() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [adminId, setAdminId] = useState<string>("");
 
   const loadUsers = useCallback(async () => {
     try {
       setIsLoading(true);
+      
+      // Carregar ID do admin logado
+      const userIdResult = await getCurrentUserIdAction();
+      if (userIdResult.success && userIdResult.userId) {
+        setAdminId(userIdResult.userId);
+      }
+      
       const result = await getAllUsersAction();
 
       if (result.success && result.users) {
@@ -85,6 +94,7 @@ export function UserManagementContainer() {
       onUpdateUser={handleUpdateUser}
       onToggleStatus={handleToggleStatus}
       isLoading={isLoading}
+      adminId={adminId}
     />
   );
 }

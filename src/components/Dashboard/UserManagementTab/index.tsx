@@ -18,14 +18,10 @@ import {
 import { useCallback, useState } from "react";
 
 import { deleteStudentAction } from "@/actions/admin/delete-student-action";
-import {
-  getStudentFullDataAction,
-  type StudentFullData,
-} from "@/actions/admin/get-students-full-data-action";
 import { toggleUserStatusAction } from "@/actions/admin/toggle-user-status-action";
 import { CreateUserForm } from "@/components/Admin/CreateUserForm";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { EditStudentModal } from "@/components/Dashboard/EditStudentModal";
+import { EditUserModal } from "@/components/Dashboard/EditUserModal";
 import { showErrorToast, showSuccessToast } from "@/components/ToastProvider";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -48,6 +44,7 @@ interface UserManagementTabProps {
   onUpdateUser?: (userId: string, updates: Partial<User>) => void;
   onToggleStatus?: (userId: string, newStatus: boolean) => void;
   isLoading?: boolean;
+  adminId: string;
 }
 
 export function UserManagementTab({
@@ -57,6 +54,7 @@ export function UserManagementTab({
   onUpdateUser,
   onToggleStatus,
   isLoading = false,
+  adminId,
 }: UserManagementTabProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRole, setSelectedRole] = useState<UserRole | "all">("all");
@@ -65,9 +63,7 @@ export function UserManagementTab({
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [studentToEdit, setStudentToEdit] = useState<StudentFullData | null>(
-    null,
-  );
+  const [userToEdit, setUserToEdit] = useState<User | null>(null);
 
   // Hook para o dialog de confirmação elegante
   const { confirm, isOpen, options, handleConfirm, handleCancel } =
@@ -193,29 +189,12 @@ export function UserManagementTab({
 
   const handleEditUser = useCallback(async (user: User) => {
     try {
-      setActionLoading(true);
-      console.log("✏️ Buscando dados completos do usuário:", user.id, user.role);
-
-      // Apenas alunos têm dados completos com financial e health metrics
-      if (user.role !== "aluno") {
-        showErrorToast("Apenas alunos podem ser editados por esta interface");
-        return;
-      }
-
-      const fullData = await getStudentFullDataAction(user.id);
-
-      if (fullData) {
-        setStudentToEdit(fullData);
-        setIsEditModalOpen(true);
-        setIsUserModalOpen(false); // Fechar modal de visualização
-      } else {
-        showErrorToast("Erro ao carregar dados do aluno");
-      }
+      setUserToEdit(user);
+      setIsEditModalOpen(true);
+      setIsUserModalOpen(false); // Fechar modal de visualização
     } catch (error) {
-      console.error("Erro ao buscar dados do aluno:", error);
-      showErrorToast("Erro ao carregar dados do aluno");
-    } finally {
-      setActionLoading(false);
+      console.error("Erro ao abrir modal de edição:", error);
+      showErrorToast("Erro ao abrir modal de edição");
     }
   }, []);
 
@@ -483,7 +462,7 @@ export function UserManagementTab({
                         Ver
                       </Button>
 
-                      {user.role === "aluno" && (
+                      {(user.role === "aluno" || user.role === "funcionario" || user.role === "professor") && (
                         <Button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -762,7 +741,7 @@ export function UserManagementTab({
 
               {/* Ações */}
               <div className="flex gap-3 border-t border-slate-700/50 pt-6">
-                {selectedUser.role === "aluno" ? (
+                {(selectedUser.role === "aluno" || selectedUser.role === "funcionario" || selectedUser.role === "professor") ? (
                   <Button
                     onClick={() => handleEditUser(selectedUser)}
                     disabled={actionLoading}
@@ -773,7 +752,7 @@ export function UserManagementTab({
                   </Button>
                 ) : (
                   <div className="flex-1 rounded-md border border-slate-700 bg-slate-800/50 px-4 py-2 text-center text-sm text-slate-400">
-                    Edição disponível apenas para alunos
+                    Edição não disponível para este tipo de usuário
                   </div>
                 )}
                 {selectedUser.role !== "admin" && (
@@ -797,28 +776,25 @@ export function UserManagementTab({
       </Dialog>
 
       {/* Modal de Edição */}
-      {studentToEdit && (
-        <EditStudentModal
+      {userToEdit && (
+        <EditUserModal
+          userId={userToEdit.id}
+          userName={userToEdit.name}
+          userRole={userToEdit.role}
           isOpen={isEditModalOpen}
           onClose={() => {
             setIsEditModalOpen(false);
-            setStudentToEdit(null);
+            setUserToEdit(null);
           }}
-          student={studentToEdit}
-          onSuccess={async () => {
-            // Recarregar dados atualizados do aluno
-            const updatedData = await getStudentFullDataAction(
-              studentToEdit.userId,
-            );
-            if (updatedData && onUpdateUser) {
-              onUpdateUser(studentToEdit.userId, {
-                name: updatedData.name,
-                email: updatedData.email,
-              });
+          onSuccess={() => {
+            // Atualizar através do callback
+            if (onUpdateUser) {
+              onUpdateUser(userToEdit.id, {});
             }
             setIsEditModalOpen(false);
-            setStudentToEdit(null);
+            setUserToEdit(null);
           }}
+          adminId={adminId}
         />
       )}
     </div>
