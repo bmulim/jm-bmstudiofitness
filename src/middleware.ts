@@ -312,13 +312,13 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/admin/:path*",
-    "/coach/:path*",
-    "/employee/:path*",
-    "/user/cadastro",
-    "/cadastro",
-    "/user/dashboard",
-    "/user/health/:path*",
-    "/user/check-ins/:path*",
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
   ],
 };
