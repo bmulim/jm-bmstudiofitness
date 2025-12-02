@@ -189,7 +189,12 @@ export function UserManagementTab({
 
   const handleEditUser = useCallback(async (user: User) => {
     try {
-      console.log("🔧 handleEditUser chamado para:", user.name, "Role:", user.role);
+      console.log(
+        "🔧 handleEditUser chamado para:",
+        user.name,
+        "Role:",
+        user.role,
+      );
       setUserToEdit(user);
       setIsEditModalOpen(true);
       setIsUserModalOpen(false); // Fechar modal de visualização
