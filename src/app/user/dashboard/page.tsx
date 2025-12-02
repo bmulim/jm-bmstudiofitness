@@ -130,6 +130,7 @@ export default function StudentDashboard() {
             icon={Calendar}
             title="Pagamentos"
             description="Status financeiro"
+            href="/user/payment"
             colorClass="border-purple-600 bg-purple-900/30"
           />
         </div>

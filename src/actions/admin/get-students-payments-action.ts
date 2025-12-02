@@ -1,6 +1,6 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 
 import { db } from "@/db";
 import { financialTable, personalDataTable, usersTable } from "@/db/schema";
@@ -26,11 +26,24 @@ export interface StudentPaymentData {
   formattedValue: string;
 }
 
+// Interface para dados brutos do banco antes do processamento
+interface RawStudentData {
+  userId: string;
+  name: string;
+  email: string | null;
+  cpf: string | null;
+  monthlyFeeValueInCents: number | null;
+  paymentMethod: string | null;
+  dueDate: number | null;
+  paid: boolean | null;
+  lastPaymentDate: string | null;
+}
+
 export async function getStudentsPaymentsAction(): Promise<
   StudentPaymentData[]
 > {
   try {
-    // Buscar todos os alunos com dados financeiros
+    // Buscar todos os alunos com dados financeiros (excluindo deletados)
     const students = await db
       .select({
         userId: usersTable.id,
@@ -44,13 +57,44 @@ export async function getStudentsPaymentsAction(): Promise<
         lastPaymentDate: financialTable.lastPaymentDate,
       })
       .from(usersTable)
-      .innerJoin(personalDataTable, eq(usersTable.id, personalDataTable.userId))
-      .innerJoin(financialTable, eq(usersTable.id, financialTable.userId))
-      .where(eq(usersTable.userRole, UserRole.ALUNO))
+      .leftJoin(personalDataTable, eq(usersTable.id, personalDataTable.userId))
+      .leftJoin(financialTable, eq(usersTable.id, financialTable.userId))
+      .where(
+        and(
+          eq(usersTable.userRole, UserRole.ALUNO),
+          isNull(usersTable.deletedAt),
+        ),
+      )
       .orderBy(usersTable.name);
 
     // Processar dados com informações adicionais
-    const processedStudents: StudentPaymentData[] = students.map((student) => {
+    const processedStudents = students.map((student): StudentPaymentData => {
+      // Valores padrão para dados não configurados
+      const defaultValues: StudentPaymentData = {
+        userId: student.userId,
+        name: student.name,
+        email: student.email || "Não configurado",
+        cpf: student.cpf || "Não configurado",
+        monthlyFeeValueInCents: 0,
+        paymentMethod: student.paymentMethod || "Não configurado",
+        dueDate: 1,
+        paid: false,
+        lastPaymentDate: null,
+        isUpToDate: false,
+        daysUntilDue: 0,
+        formattedValue: "Não configurado",
+      };
+
+      // Se não tem dados financeiros, retorna valores padrão
+      if (
+        !student.dueDate ||
+        student.paid === null ||
+        !student.monthlyFeeValueInCents
+      ) {
+        return defaultValues;
+      }
+
+      // Se tem dados financeiros, processa as informações
       const isUpToDate = isPaymentUpToDate(
         student.dueDate,
         student.lastPaymentDate,
@@ -61,7 +105,15 @@ export async function getStudentsPaymentsAction(): Promise<
       const formattedValue = formatCurrency(student.monthlyFeeValueInCents);
 
       return {
-        ...student,
+        userId: student.userId,
+        name: student.name,
+        email: student.email || "Não configurado",
+        cpf: student.cpf || "Não configurado",
+        monthlyFeeValueInCents: student.monthlyFeeValueInCents,
+        paymentMethod: student.paymentMethod || "Não configurado",
+        dueDate: student.dueDate,
+        paid: student.paid,
+        lastPaymentDate: student.lastPaymentDate,
         isUpToDate,
         daysUntilDue,
         formattedValue,

@@ -19,6 +19,7 @@ export interface CreateStudentData {
   // Dados pessoais
   cpf: string;
   email: string;
+  sex: "masculino" | "feminino";
   bornDate: string;
   address: string;
   telephone: string;
@@ -90,6 +91,7 @@ export async function createStudent(data: CreateStudentData) {
       userId: user.id,
       cpf: data.cpf.replace(/\D/g, ""),
       email: data.email,
+      sex: data.sex,
       bornDate: data.bornDate,
       address: data.address,
       telephone: data.telephone,

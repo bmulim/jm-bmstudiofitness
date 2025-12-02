@@ -7,12 +7,18 @@ import { UserRole } from "../types/user-roles";
 import {
   categories,
   checkInTable,
+  employeesTable,
+  employeeTimeRecordsTable,
   financialTable,
   healthMetricsTable,
   personalDataTable,
   posts,
+  professorCheckInsTable,
+  studentHealthHistoryTable,
+  studioExpensesTable,
   userConfirmationTokensTable,
   usersTable,
+  waitlistTable,
 } from "./schema";
 
 // ---- conexões ----
@@ -22,9 +28,15 @@ const db = drizzle(connectionString);
 async function main() {
   // Limpar dados existentes (ordem importante devido às foreign keys)
   await db.delete(userConfirmationTokensTable);
+  await db.delete(waitlistTable); // Deletar waitlist antes de users
+  await db.delete(professorCheckInsTable);
   await db.delete(checkInTable);
   await db.delete(financialTable);
+  await db.delete(studentHealthHistoryTable);
   await db.delete(healthMetricsTable);
+  await db.delete(employeeTimeRecordsTable);
+  await db.delete(employeesTable);
+  await db.delete(studioExpensesTable);
   await db.delete(personalDataTable);
   await db.delete(posts);
   await db.delete(categories);
@@ -96,6 +108,7 @@ async function main() {
       userId: admin.id,
       cpf: "11111111111",
       email: "julianamartins@jmfitnessstudio.com.br",
+      sex: "feminino",
       bornDate: "1985-05-20",
       address: "Rua Administração, 1 - São Paulo/SP",
       telephone: "+55 11 99999-0001",
@@ -103,15 +116,26 @@ async function main() {
     {
       userId: professor.id,
       cpf: "22222222222",
-      email: "maria.professor@jmfitnessstudio.com",
+      email: "maria.professor@jmfitness.com",
+      sex: "feminino",
       bornDate: "1990-03-15",
       address: "Rua dos Professores, 200 - São Paulo/SP",
       telephone: "+55 11 99999-0002",
     },
     {
+      userId: funcionario.id,
+      cpf: "33333333333",
+      email: "carlos.silva@jmfitnessstudio.com.br",
+      sex: "masculino",
+      bornDate: "1988-08-12",
+      address: "Rua dos Funcionários, 150 - São Paulo/SP",
+      telephone: "+55 11 99999-0003",
+    },
+    {
       userId: ana.id,
       cpf: "12345678901",
       email: "ana.costa@email.com",
+      sex: "feminino",
       bornDate: "1996-02-14",
       address: "Rua das Flores, 100 - São Paulo/SP",
       telephone: "+55 11 98888-0001",
@@ -120,6 +144,7 @@ async function main() {
       userId: bruno.id,
       cpf: "23456789012",
       email: "bruno.lima@email.com",
+      sex: "masculino",
       bornDate: "1992-10-03",
       address: "Rua dos Atletas, 200 - São Paulo/SP",
       telephone: "+55 11 98888-0002",
@@ -128,6 +153,7 @@ async function main() {
       userId: carla.id,
       cpf: "34567890123",
       email: "carla.mendes@email.com",
+      sex: "feminino",
       bornDate: "1989-07-20",
       address: "Rua da Saúde, 300 - São Paulo/SP",
       telephone: "+55 11 98888-0003",
@@ -136,13 +162,95 @@ async function main() {
       userId: daniel.id,
       cpf: "45678901234",
       email: "daniel.oliveira@email.com",
+      sex: "masculino",
       bornDate: "1995-12-08",
       address: "Rua do Fitness, 400 - São Paulo/SP",
       telephone: "+55 11 98888-0004",
     },
   ]);
 
-  // 3) Métricas de saúde apenas para alunos
+  // 3) Dados de funcionário e professor
+  const employeeRecords = await db
+    .insert(employeesTable)
+    .values([
+      {
+        userId: professor.id,
+        position: "Personal Trainer",
+        shift: "integral",
+        shiftStartTime: "07:00",
+        shiftEndTime: "19:00",
+        salaryInCents: 350000, // R$ 3.500,00
+        hireDate: "2025-02-01",
+        createdAt: new Date("2025-02-01"),
+        updatedAt: new Date("2025-02-01"),
+      },
+      {
+        userId: funcionario.id,
+        position: "Recepcionista",
+        shift: "integral",
+        shiftStartTime: "08:00",
+        shiftEndTime: "18:00",
+        salaryInCents: 280000, // R$ 2.800,00
+        hireDate: "2025-02-15",
+        createdAt: new Date("2025-02-15"),
+        updatedAt: new Date("2025-02-15"),
+      },
+    ])
+    .returning();
+
+  const [professorEmployee, employeeRecord] = employeeRecords;
+
+  // 3.1) Registros de ponto do funcionário (últimos 30 dias)
+  const timeRecords = [];
+  const today = new Date();
+
+  // Gerar registros para os últimos 30 dias (exceto fins de semana)
+  for (let i = 29; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+
+    // Pular sábados (6) e domingos (0)
+    const dayOfWeek = date.getDay();
+    if (dayOfWeek === 0 || dayOfWeek === 6) continue;
+
+    const dateStr = date.toISOString().split("T")[0];
+
+    // Variação nos horários para parecer mais real
+    const checkInVariation = Math.floor(Math.random() * 30) - 15; // -15 a +15 minutos
+    const checkOutVariation = Math.floor(Math.random() * 30) - 15;
+
+    const checkInHour = 8;
+    const checkInMinute = Math.max(0, Math.min(59, checkInVariation));
+    const checkInTime = `${checkInHour.toString().padStart(2, "0")}:${Math.abs(checkInMinute).toString().padStart(2, "0")}`;
+
+    const checkOutHour = 18;
+    const checkOutMinute = Math.max(0, Math.min(59, checkOutVariation));
+    const checkOutTime = `${checkOutHour.toString().padStart(2, "0")}:${Math.abs(checkOutMinute).toString().padStart(2, "0")}`;
+
+    // Calcular total de horas
+    const totalMinutes =
+      checkOutHour * 60 +
+      Math.abs(checkOutMinute) -
+      (checkInHour * 60 + Math.abs(checkInMinute));
+    const totalHours = Math.floor(totalMinutes / 60);
+    const totalMins = totalMinutes % 60;
+    const totalHoursStr = `${totalHours}:${totalMins.toString().padStart(2, "0")}`;
+
+    timeRecords.push({
+      employeeId: employeeRecord.id,
+      date: dateStr,
+      checkInTime,
+      checkOutTime,
+      totalHours: totalHoursStr,
+      notes: i < 3 ? null : Math.random() > 0.9 ? "Horário normal" : null,
+      approved: i >= 7, // Últimos 7 dias ainda não aprovados
+      approvedBy: i >= 7 ? admin.id : null,
+    });
+  }
+
+  await db.insert(employeeTimeRecordsTable).values(timeRecords);
+
+  // 4) Métricas de saúde apenas para alunos
   await db.insert(healthMetricsTable).values([
     {
       userId: ana.id,
@@ -222,7 +330,7 @@ async function main() {
     },
   ]);
 
-  // 4) Dados financeiros apenas para alunos - incluindo paymentMethod obrigatório
+  // 5) Dados financeiros apenas para alunos - incluindo paymentMethod obrigatório
   await db.insert(financialTable).values([
     {
       userId: ana.id,
@@ -266,7 +374,7 @@ async function main() {
     },
   ]);
 
-  // 5) Check-ins diversos para simular frequência
+  // 6) Check-ins diversos para simular frequência
   const checkInsData = [
     // Ana - manhã
     {
@@ -415,7 +523,7 @@ async function main() {
 
   await db.insert(checkInTable).values(checkInsData);
 
-  // 8) Criar categorias para o blog
+  // 7) Criar categorias para o blog
   const blogCategories = await db
     .insert(categories)
     .values([
@@ -440,7 +548,7 @@ async function main() {
       {
         name: "Novidades",
         slug: "novidades",
-        description: "Últimas novidades da academia e do mundo fitness",
+        description: "Últimas novidades do estúdio e do mundo fitness",
         color: "#8b5cf6", // roxo
       },
     ])
@@ -448,11 +556,11 @@ async function main() {
 
   const [treino, nutricao, motivacao, novidades] = blogCategories;
 
-  // 9) Criar posts para o blog
+  // 8) Criar posts para o blog
   const blogPosts = [
     {
       title: "Benefícios do Treino Funcional para Iniciantes",
-      content: `O treino funcional tem ganhado cada vez mais adeptos nas academias ao redor do mundo, e não é para menos. Este tipo de exercício trabalha o corpo de forma integrada, simulando movimentos do dia a dia e proporcionando benefícios únicos para quem está começando a se exercitar.
+      content: `O treino funcional tem ganhado cada vez mais adeptos nos estúdios fitness ao redor do mundo, e não é para menos. Este tipo de exercício trabalha o corpo de forma integrada, simulando movimentos do dia a dia e proporcionando benefícios únicos para quem está começando a se exercitar.
 
 **O que é treino funcional?**
 
@@ -490,7 +598,7 @@ Aqui na JM Fitness Studio, nossos professores são especializados em treino func
       metaDescription:
         "Descubra como o treino funcional pode transformar sua rotina de exercícios com movimentos naturais e eficientes. Guia completo para iniciantes.",
       metaKeywords:
-        "treino funcional, exercícios funcionais, iniciantes, academia, JM Fitness Studio",
+        "treino funcional, exercícios funcionais, iniciantes, estúdio fitness, JM Fitness Studio",
       slug: "beneficios-treino-funcional-iniciantes",
       readTime: 5,
       createdAt: new Date("2025-11-01"),
@@ -541,7 +649,7 @@ Lembre-se: o inverno não precisa ser sinônimo de sedentarismo. Com as estraté
       metaDescription:
         "Estratégias práticas para manter sua rotina de exercícios durante o inverno e não deixar o frio atrapalhar seus objetivos fitness.",
       metaKeywords:
-        "motivação, treino inverno, exercícios frio, rotina fitness, academia",
+        "motivação, treino inverno, exercícios frio, rotina fitness, estúdio",
       slug: "motivacao-treinar-inverno",
       readTime: 4,
       createdAt: new Date("2025-10-28"),
@@ -642,7 +750,7 @@ Lembre-se: a nutrição é individual. O que funciona para uma pessoa pode não 
     },
     {
       title: "Exercícios para Fortalecer o Core em Casa",
-      content: `Um core forte é a base de praticamente todos os movimentos que fazemos, seja na academia ou nas atividades do dia a dia. Felizmente, você não precisa de equipamentos caros ou ir à academia para fortalecer essa região. Com alguns exercícios simples, você pode trabalhar seu core efetivamente em casa.
+      content: `Um core forte é a base de praticamente todos os movimentos que fazemos, seja no estúdio fitness ou nas atividades do dia a dia. Felizmente, você não precisa de equipamentos caros ou ir ao estúdio para fortalecer essa região. Com alguns exercícios simples, você pode trabalhar seu core efetivamente em casa.
 
 **O QUE É O CORE?**
 
@@ -751,7 +859,7 @@ Lembre-se: a consistência é mais importante que a intensidade. Comece devagar,
       updatedAt: new Date("2025-11-02"),
     },
     {
-      title: "Novidades da Academia: Novas Modalidades e Equipamentos",
+      title: "Novidades do Estúdio: Novas Modalidades e Equipamentos",
       content: `Estamos sempre buscando formas de melhorar a experiência dos nossos alunos aqui na JM Fitness Studio. Este mês trazemos novidades incríveis que vão revolucionar seus treinos!
 
 **NOVAS MODALIDADES**
@@ -838,7 +946,7 @@ Recebemos dois novos profissionais especializados:
 **COMO PARTICIPAR**
 
 1. Fale com a recepção para agendar sua avaliação gratuita
-2. Baixe nosso novo app "JM Fitness Studio" na App Store ou Google Play
+2. Baixe nosso novo app "JM Fitness" na App Store ou Google Play
 3. Acompanhe nossas redes sociais para dicas exclusivas
 4. Indique um amigo e ganhe uma semana gratuita
 
@@ -853,12 +961,12 @@ Venha conhecer as novidades e descubra como podemos potencializar ainda mais seu
       authorId: 1, // Admin
       categoryId: novidades.id, // Categoria Novidades
       metaTitle:
-        "Novidades da Academia: Novas Modalidades e Equipamentos - JM Fitness Studio",
+        "Novidades do Estúdio: Novas Modalidades e Equipamentos - JM Fitness Studio",
       metaDescription:
         "Conheça as novidades da JM Fitness Studio: novas modalidades, equipamentos modernos e melhorias na infraestrutura para uma experiência única.",
       metaKeywords:
-        "novidades academia, novas modalidades, equipamentos fitness, JM Fitness Studio, CrossTraining, HIIT Dance",
-      slug: "novidades-academia-modalidades-equipamentos",
+        "novidades estúdio fitness, novas modalidades, equipamentos fitness, JM Fitness Studio, CrossTraining, HIIT Dance",
+      slug: "novidades-estudio-modalidades-equipamentos",
       readTime: 8,
       createdAt: new Date("2025-11-05"),
       updatedAt: new Date("2025-11-05"),
@@ -870,7 +978,10 @@ Venha conhecer as novidades e descubra como podemos potencializar ainda mais seu
   console.log("✅ Seed concluído com sucesso!");
   console.log("📊 Dados criados:");
   console.log(`  - 1 Administrador: ${admin.name}`);
-  console.log(`  - 1 Professor: ${professor.name}`);
+  console.log(
+    `  - 1 Professor: ${professor.name} (Personal Trainer - pode fazer login)`,
+  );
+  console.log(`  - 1 Funcionário: ${funcionario.name} (Recepcionista)`);
   console.log(
     `  - 4 Alunos: ${ana.name}, ${bruno.name}, ${carla.name}, ${daniel.name}`,
   );
@@ -883,6 +994,9 @@ Venha conhecer as novidades e descubra como podemos potencializar ainda mais seu
   console.log("  - Métricas de saúde completas para todos os alunos");
   console.log(
     `  - ${blogPosts.length} posts para o blog (4 publicados, 1 rascunho)`,
+  );
+  console.log(
+    `  - ${timeRecords.length} registros de ponto do funcionário (últimos 30 dias úteis)`,
   );
 }
 

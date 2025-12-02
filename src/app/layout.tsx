@@ -9,7 +9,6 @@ import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { MainContent } from "@/components/MainContent";
 import { SecurityManager } from "@/components/SecurityManager";
-import { StructuredData } from "@/components/StructuredData";
 import { ToastProvider } from "@/components/ToastProvider";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 
@@ -38,24 +37,26 @@ const anton = Anton({
 export const metadata: Metadata = {
   metadataBase: new URL("https://jmfitnessstudio.com.br"),
   title: {
-    default: "JM Fitness Studio | Academia de Musculação e Treinamento Funcional",
+    default: "JM Fitness Studio | Estúdio de Saúde e Bem-Estar",
     template: "%s | JM Fitness Studio",
   },
   description:
-    "Transforme sua vida no JM Fitness Studio. Academia completa com musculação, treinamento funcional e acompanhamento personalizado. Ambiente profissional dedicado à sua saúde, bem-estar e conquista dos seus objetivos fitness. Venha fazer parte da nossa família fitness!",
+    "JM Fitness Studio em Duque de Caxias - RJ. Estúdio especializado em saúde, bem-estar e qualidade de vida. Treinos personalizados, acompanhamento profissional e ambiente acolhedor. Cuide da sua saúde conosco!",
   keywords: [
-    "academia",
+    "estúdio fitness",
+    "saúde e bem-estar",
+    "treino personalizado",
     "fitness",
-    "musculação",
-    "treinamento funcional",
-    "personal trainer",
+    "Duque de Caxias",
+    "RJ",
     "JM Fitness Studio",
-    "academia perto de mim",
-    "treino",
+    "qualidade de vida",
     "saúde",
     "bem-estar",
-    "emagrecimento",
-    "hipertrofia",
+    "exercícios personalizados",
+    "estúdio 25 de agosto",
+    "personal trainer",
+    "acompanhamento fitness",
   ],
   authors: [{ name: "JM Fitness Studio" }],
   creator: "JM Fitness Studio",
@@ -65,29 +66,39 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  openGraph: {
-    type: "website",
-    locale: "pt_BR",
-    url: "https://jmfitnessstudio.com.br",
-    siteName: "JM Fitness Studio",
-    title: "JM Fitness Studio | Academia de Musculação e Treinamento Funcional",
-    description:
-      "Transforme sua vida no JM Fitness Studio. Academia completa com musculação, treinamento funcional e acompanhamento personalizado.",
-    images: [
+  icons: {
+    icon: [
       {
-        url: "/banner-01.png",
-        width: 1200,
-        height: 630,
-        alt: "JM Fitness Studio",
+        url: "/favicon.svg",
+        type: "image/svg+xml",
       },
     ],
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
+  openGraph: {
+    title: "JM Fitness Studio | Estúdio de Saúde e Bem-Estar",
+    description:
+      "JM Fitness Studio em Duque de Caxias - RJ. Estúdio especializado em saúde, bem-estar e qualidade de vida. Treinos personalizados e acompanhamento profissional.",
+    url: "https://jmfitnessstudio.com.br",
+    siteName: "JM Fitness Studio",
+    images: [
+      {
+        url: "/favicon.svg",
+        width: 500,
+        height: 500,
+        alt: "JM Fitness Studio Logo",
+      },
+    ],
+    locale: "pt_BR",
+    type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "JM Fitness Studio | Academia de Musculação e Treinamento Funcional",
+    title: "JM Fitness Studio | Estúdio de Saúde e Bem-Estar",
     description:
-      "Transforme sua vida no JM Fitness Studio. Academia completa com musculação, treinamento funcional e acompanhamento personalizado.",
-    images: ["/banner-01.png"],
+      "JM Fitness Studio em Duque de Caxias - RJ. Estúdio especializado em saúde, bem-estar e qualidade de vida. Treinos personalizados e acompanhamento profissional.",
+    images: ["/favicon.svg"],
   },
   robots: {
     index: true,
@@ -101,7 +112,7 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: "seu-codigo-de-verificacao-aqui", // Adicione após verificar no Google Search Console
+    google: "verification_token", // Substituir pelo token real após verificar no Google Search Console
   },
 };
 
@@ -117,11 +128,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className="h-full">
-      <head>
-        <meta name="theme-color" content="#1b1b1a" />
-        <link rel="canonical" href="https://jmfitnessstudio.com.br" />
-        <StructuredData />
-      </head>
       <body
         className={clsx(
           `${geistSans.variable} ${geistMono.variable} ${oswald.variable} ${anton.variable} antialiased`,

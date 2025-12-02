@@ -18,6 +18,7 @@ export interface StudentFullData {
   name: string;
   userRole: string;
   createdAt: string;
+  deletedAt: string | null;
 
   // Dados pessoais
   cpf: string;
@@ -69,6 +70,7 @@ export async function getAllStudentsFullDataAction(): Promise<
         name: usersTable.name,
         userRole: usersTable.userRole,
         createdAt: usersTable.createdAt,
+        deletedAt: usersTable.deletedAt,
 
         // Dados pessoais
         cpf: personalDataTable.cpf,
@@ -112,7 +114,7 @@ export async function getAllStudentsFullDataAction(): Promise<
         healthMetricsTable,
         eq(usersTable.id, healthMetricsTable.userId),
       )
-      .where(eq(usersTable.userRole, UserRole.ALUNO))
+      .where(eq(usersTable.userRole, UserRole.ALUNO)) // Removido filtro de deletedAt para incluir desativados
       .orderBy(usersTable.name);
 
     // Processar dados adicionais
@@ -136,6 +138,7 @@ export async function getAllStudentsFullDataAction(): Promise<
 
       return {
         ...student,
+        deletedAt: student.deletedAt ? student.deletedAt.toISOString() : null,
         age,
         isPaymentUpToDate: isPaymentUpToDateStatus,
         formattedMonthlyFee,
@@ -161,6 +164,7 @@ export async function getStudentFullDataAction(
         name: usersTable.name,
         userRole: usersTable.userRole,
         createdAt: usersTable.createdAt,
+        deletedAt: usersTable.deletedAt,
 
         // Dados pessoais
         cpf: personalDataTable.cpf,
@@ -204,7 +208,7 @@ export async function getStudentFullDataAction(
         healthMetricsTable,
         eq(usersTable.id, healthMetricsTable.userId),
       )
-      .where(eq(usersTable.id, userId))
+      .where(eq(usersTable.id, userId)) // Removido filtro deletedAt para incluir desativados
       .limit(1);
 
     if (student.length === 0) {
@@ -232,6 +236,9 @@ export async function getStudentFullDataAction(
 
     return {
       ...studentData,
+      deletedAt: studentData.deletedAt
+        ? studentData.deletedAt.toISOString()
+        : null,
       age,
       isPaymentUpToDate: isPaymentUpToDateStatus,
       formattedMonthlyFee,

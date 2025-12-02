@@ -8,6 +8,7 @@ import {
 } from "@/actions/admin/get-students-payments-action";
 import { updatePaymentAction } from "@/actions/admin/update-payment-action";
 import { AdminLayout } from "@/components/Admin/AdminLayout";
+import { PaymentStatusModal } from "@/components/Admin/PaymentStatusModal";
 import { Button } from "@/components/Button";
 import {
   Card,
@@ -23,6 +24,10 @@ export default function AdminPaymentsPage() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
 
+  // Estados para modais
+  const [showUpToDateModal, setShowUpToDateModal] = useState(false);
+  const [showOverdueModal, setShowOverdueModal] = useState(false);
+
   // Estados para paginação
   const [currentPageUpToDate, setCurrentPageUpToDate] = useState(1);
   const [currentPageOverdue, setCurrentPageOverdue] = useState(1);
@@ -32,7 +37,9 @@ export default function AdminPaymentsPage() {
   useEffect(() => {
     async function loadStudents() {
       try {
+        console.log("Carregando dados dos alunos...");
         const data = await getStudentsPaymentsAction();
+        console.log("Dados carregados:", data);
         setStudents(data);
       } catch (error) {
         console.error("Erro ao carregar dados dos alunos:", error);
@@ -154,7 +161,13 @@ export default function AdminPaymentsPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-green-600 bg-green-900/20 backdrop-blur-sm">
+            <Card
+              className="cursor-pointer border-green-600 bg-green-900/20 backdrop-blur-sm transition-all hover:bg-green-900/30"
+              onClick={() => {
+                console.log("Abrindo modal de pagamentos em dia");
+                setShowUpToDateModal(true);
+              }}
+            >
               <CardContent className="p-3 sm:p-6">
                 <div className="text-center">
                   <div className="mb-1 text-lg sm:mb-2 sm:text-2xl">✅</div>
@@ -168,7 +181,13 @@ export default function AdminPaymentsPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-red-600 bg-red-900/20 backdrop-blur-sm">
+            <Card
+              className="cursor-pointer border-red-600 bg-red-900/20 backdrop-blur-sm transition-all hover:bg-red-900/30"
+              onClick={() => {
+                console.log("Abrindo modal de pagamentos em atraso");
+                setShowOverdueModal(true);
+              }}
+            >
               <CardContent className="p-3 sm:p-6">
                 <div className="text-center">
                   <div className="mb-1 text-lg sm:mb-2 sm:text-2xl">⚠️</div>
@@ -739,6 +758,24 @@ export default function AdminPaymentsPage() {
           </Card>
         </div>
       </div>
+      {/* Modais de Status de Pagamento */}
+      <PaymentStatusModal
+        isOpen={showUpToDateModal}
+        onClose={() => setShowUpToDateModal(false)}
+        title="Pagamentos em Dia"
+        students={studentsUpToDate}
+        type="paid"
+        onUpdatePayment={handlePaymentUpdate}
+      />
+
+      <PaymentStatusModal
+        isOpen={showOverdueModal}
+        onClose={() => setShowOverdueModal(false)}
+        title="Pagamentos Pendentes"
+        students={studentsOverdue}
+        type="pending"
+        onUpdatePayment={handlePaymentUpdate}
+      />
     </AdminLayout>
   );
 }

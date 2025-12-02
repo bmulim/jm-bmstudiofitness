@@ -120,6 +120,7 @@ export async function createUserAction(
       await db.insert(personalDataTable).values({
         userId: createdUser.id,
         email: data.email.trim(),
+        sex: data.sex || "masculino",
         cpf: data.cpf ? data.cpf.replace(/\D/g, "") : "",
         telephone: data.telephone || "",
         address: data.address || "",
@@ -226,89 +227,101 @@ export async function deleteUserAction(
     const deletedObservations1 = await db
       .delete(coachObservationsHistoryTable)
       .where(eq(coachObservationsHistoryTable.userId, userId));
+    const deletedObservations1Count =
+      (deletedObservations1 as unknown as { rowCount?: number }).rowCount || 0;
     console.log(
-      `   ↳ Deletadas ${deletedObservations1.rowCount || 0} observações como aluno`,
+      `   ↳ Deletadas ${deletedObservations1Count} observações como aluno`,
     );
-    totalDeleted += deletedObservations1.rowCount || 0;
+    totalDeleted += deletedObservations1Count;
 
     // 2. Histórico de observações do coach (como professor)
     console.log("🗑️ Deletando observações como professor...");
     const deletedObservations2 = await db
       .delete(coachObservationsHistoryTable)
       .where(eq(coachObservationsHistoryTable.professorId, userId));
+    const deletedObservations2Count =
+      (deletedObservations2 as unknown as { rowCount?: number }).rowCount || 0;
     console.log(
-      `   ↳ Deletadas ${deletedObservations2.rowCount || 0} observações como professor`,
+      `   ↳ Deletadas ${deletedObservations2Count} observações como professor`,
     );
-    totalDeleted += deletedObservations2.rowCount || 0;
+    totalDeleted += deletedObservations2Count;
 
     // 3. Histórico de saúde do aluno
     console.log("🗑️ Deletando histórico de saúde...");
     const deletedHealthHistory = await db
       .delete(studentHealthHistoryTable)
       .where(eq(studentHealthHistoryTable.userId, userId));
+    const deletedHealthHistoryCount =
+      (deletedHealthHistory as unknown as { rowCount?: number }).rowCount || 0;
     console.log(
-      `   ↳ Deletados ${deletedHealthHistory.rowCount || 0} registros de histórico de saúde`,
+      `   ↳ Deletados ${deletedHealthHistoryCount} registros de histórico de saúde`,
     );
-    totalDeleted += deletedHealthHistory.rowCount || 0;
+    totalDeleted += deletedHealthHistoryCount;
 
     // 4. Tokens de confirmação
     console.log("🗑️ Deletando tokens de confirmação...");
     const deletedTokens = await db
       .delete(userConfirmationTokensTable)
       .where(eq(userConfirmationTokensTable.userId, userId));
-    console.log(`   ↳ Deletados ${deletedTokens.rowCount || 0} tokens`);
-    totalDeleted += deletedTokens.rowCount || 0;
+    const deletedTokensCount =
+      (deletedTokens as unknown as { rowCount?: number }).rowCount || 0;
+    console.log(`   ↳ Deletados ${deletedTokensCount} tokens`);
+    totalDeleted += deletedTokensCount;
 
     // 5. Check-ins
     console.log("🗑️ Deletando check-ins...");
     const deletedCheckIns = await db
       .delete(checkInTable)
       .where(eq(checkInTable.userId, userId));
-    console.log(`   ↳ Deletados ${deletedCheckIns.rowCount || 0} check-ins`);
-    totalDeleted += deletedCheckIns.rowCount || 0;
+    const deletedCheckInsCount =
+      (deletedCheckIns as unknown as { rowCount?: number }).rowCount || 0;
+    console.log(`   ↳ Deletados ${deletedCheckInsCount} check-ins`);
+    totalDeleted += deletedCheckInsCount;
 
     // 6. Dados financeiros
     console.log("🗑️ Deletando dados financeiros...");
     const deletedFinancial = await db
       .delete(financialTable)
       .where(eq(financialTable.userId, userId));
+    const deletedFinancialCount =
+      (deletedFinancial as unknown as { rowCount?: number }).rowCount || 0;
     console.log(
-      `   ↳ Deletados ${deletedFinancial.rowCount || 0} registros financeiros`,
+      `   ↳ Deletados ${deletedFinancialCount} registros financeiros`,
     );
-    totalDeleted += deletedFinancial.rowCount || 0;
+    totalDeleted += deletedFinancialCount;
 
     // 7. Dados de saúde (métricas)
     console.log("🗑️ Deletando métricas de saúde...");
     const deletedHealth = await db
       .delete(healthMetricsTable)
       .where(eq(healthMetricsTable.userId, userId));
-    console.log(
-      `   ↳ Deletados ${deletedHealth.rowCount || 0} registros de métricas`,
-    );
-    totalDeleted += deletedHealth.rowCount || 0;
+    const deletedHealthCount =
+      (deletedHealth as unknown as { rowCount?: number }).rowCount || 0;
+    console.log(`   ↳ Deletados ${deletedHealthCount} registros de métricas`);
+    totalDeleted += deletedHealthCount;
 
     // 8. Dados pessoais
     console.log("🗑️ Deletando dados pessoais...");
     const deletedPersonal = await db
       .delete(personalDataTable)
       .where(eq(personalDataTable.userId, userId));
-    console.log(
-      `   ↳ Deletados ${deletedPersonal.rowCount || 0} registros pessoais`,
-    );
-    totalDeleted += deletedPersonal.rowCount || 0;
+    const deletedPersonalCount =
+      (deletedPersonal as unknown as { rowCount?: number }).rowCount || 0;
+    console.log(`   ↳ Deletados ${deletedPersonalCount} registros pessoais`);
+    totalDeleted += deletedPersonalCount;
 
     // 9. Por último, deletar o usuário principal
     console.log("🗑️ Deletando usuário principal...");
     const deletedUser = await db
       .delete(usersTable)
       .where(eq(usersTable.id, userId));
-    console.log(
-      `   ↳ Usuário principal deletado: ${deletedUser.rowCount || 0}`,
-    );
-    totalDeleted += deletedUser.rowCount || 0;
+    const deletedUserCount =
+      (deletedUser as unknown as { rowCount?: number }).rowCount || 0;
+    console.log(`   ↳ Usuário principal deletado: ${deletedUserCount}`);
+    totalDeleted += deletedUserCount;
 
     // Verificar se o usuário realmente foi deletado
-    if ((deletedUser.rowCount || 0) === 0) {
+    if (deletedUserCount === 0) {
       console.log("❌ Falha ao deletar usuário principal!");
       return {
         success: false,

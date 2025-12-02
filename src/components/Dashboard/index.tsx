@@ -5,6 +5,7 @@ export { ConfigurationTab } from "./ConfigurationTab";
 export { CreatePostForm } from "./CreatePostForm";
 export { DashboardHeader } from "./DashboardHeader";
 export { EditPostForm } from "./EditPostForm";
+export { EmployeeTab } from "./EmployeeTab";
 export { FinancialTab } from "./FinancialTab";
 export { FrequencyChart } from "./FrequencyChart";
 export { InfoCard, InfoField } from "./InfoCard";

@@ -60,7 +60,7 @@ export async function getPublishedPostsAction() {
 
     return postsWithTags;
   } catch (error) {
-    console.error("Error fetching published posts:", error);
+    console.error("❌ [SERVER] Error fetching published posts:", error);
     throw new Error("Failed to fetch published posts");
   }
 }

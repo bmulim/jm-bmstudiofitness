@@ -28,14 +28,18 @@ export function Header() {
     pathname.startsWith("/admin") && !pathname.includes("/login");
   const isCoachPage =
     pathname.startsWith("/coach") && !pathname.includes("/login");
-  const isDashboardPage = isAdminPage || isCoachPage;
+  // isDashboardPage removed (not used) - keep individual flags
+  const isBlogPage = pathname?.startsWith("/blog");
+  const isServicesPage = pathname?.startsWith("/services");
+  const isContactPage = pathname?.startsWith("/contact");
+  const isStudentPage = pathname?.startsWith("/user");
 
   // Define título e descrição baseado na página
   const getDashboardInfo = () => {
     if (isAdminPage) {
       return {
         title: "🏋️ Dashboard Administrativo",
-        description: "Sistema completo de gestão da academia",
+        description: "Sistema completo de gestão do estúdio",
       };
     }
     if (isCoachPage) {
@@ -50,9 +54,29 @@ export function Header() {
   const dashboardInfo = getDashboardInfo();
 
   const buttonClasses =
-    "px-4 md:px-5 lg:px-6 py-2.5 md:py-3 rounded-xl font-medium transition-all duration-700 ease-out hover:scale-[1.03] active:scale-[0.97] transform";
-  const primaryButton = `${buttonClasses} bg-gradient-to-r from-[#C2A537] to-[#D4B547] text-black hover:from-[#D4B547] hover:to-[#E6C658] hover:shadow-xl hover:shadow-[#C2A537]/30 border border-[#C2A537]/50 hover:border-[#D4B547]`;
-  const secondaryButton = `${buttonClasses} border-2 border-[#C2A537]/50 text-[#C2A537] hover:bg-[#C2A537]/15 hover:border-[#C2A537]/80 hover:text-[#D4B547] hover:shadow-lg hover:shadow-[#C2A537]/25 backdrop-blur-sm`;
+    "px-5 md:px-6 lg:px-7 py-2.5 md:py-3 font-medium tracking-wide transition-all duration-300 ease-out transform-gpu relative focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#C2A537]/50";
+
+  const primaryButton = `${buttonClasses} rounded-xl 
+    bg-gradient-to-br from-[#FFE17D] via-[#D4B547] to-[#B8941F]
+    text-black/90
+    border border-[#C2A537]/20
+    shadow-[0_8px_16px_-2px_rgba(194,165,55,0.2),inset_0_-4px_8px_rgba(0,0,0,0.1),inset_0_2px_4px_rgba(255,255,255,0.1)]
+    hover:shadow-[0_16px_32px_-4px_rgba(194,165,55,0.3),inset_0_-4px_8px_rgba(0,0,0,0.1),inset_0_2px_4px_rgba(255,255,255,0.1)]
+    hover:-translate-y-1 active:translate-y-0.5
+    hover:scale-[1.02] active:scale-[0.98]
+    backdrop-blur-sm
+    ring-offset-2`;
+
+  const secondaryButton = `${buttonClasses} rounded-lg 
+    bg-gradient-to-br from-black/5 via-black/10 to-black/20
+    text-[#E6D9A7] hover:text-[#FFE17D]
+    border border-[#C2A537]/10
+    shadow-[0_4px_12px_-2px_rgba(0,0,0,0.2),inset_0_-2px_4px_rgba(0,0,0,0.1),inset_0_1px_2px_rgba(255,255,255,0.05)]
+    hover:shadow-[0_8px_24px_-4px_rgba(194,165,55,0.15),inset_0_-2px_4px_rgba(0,0,0,0.2),inset_0_1px_2px_rgba(255,255,255,0.1)]
+    hover:-translate-y-0.5 active:translate-y-0
+    hover:scale-[1.01] active:scale-[0.99]
+    hover:bg-gradient-to-br hover:from-black/10 hover:via-black/15 hover:to-black/25
+    backdrop-blur-md`;
 
   return (
     <motion.header
@@ -61,8 +85,11 @@ export function Header() {
       transition={{ duration: 0.8, ease: "easeOut" }}
       className={clsx(
         "flex w-full min-w-full items-center justify-between",
-        "px-4 py-2 sm:px-6 sm:py-3",
-        "border-b border-[#C2A537]/30 bg-black/95 backdrop-blur-lg",
+        "px-4 py-3 sm:px-6 sm:py-4",
+        "bg-linear-to-br from-black/95 via-black/85 to-black/75",
+        "border-b border-[#C2A537]/10",
+        "shadow-[0_4px_24px_-6px_rgba(0,0,0,0.5),inset_0_1px_2px_rgba(255,255,255,0.1)]",
+        "backdrop-blur-xl backdrop-saturate-150",
         "fixed top-0 right-0 left-0 z-50",
         dashboardInfo ? "h-20 sm:h-24" : "h-16 sm:h-20",
       )}
@@ -80,23 +107,41 @@ export function Header() {
       >
         <Link href="/">
           <motion.div
+            className="relative flex items-center justify-center px-2"
             animate={{
-              y: [0, -3, 0],
+              y: [0, -6, 0, 4, 0],
+              rotate: [0, -2, 2, 0],
+              scale: [1, 1.02, 1, 0.99, 1],
             }}
             transition={{
-              duration: 3,
+              duration: 6,
               repeat: Infinity,
               ease: "easeInOut",
             }}
+            whileHover={{ scale: 1.06, rotate: -2 }}
           >
-            <Image
-              src={banner}
-              alt="Logo JM Fitness Studio"
-              width={120}
-              height={300}
-              priority
-              className="px-2"
+            {/* Subtle animated glow behind logo */}
+            <motion.span
+              aria-hidden
+              className="absolute -z-10 h-[110%] w-[110%] rounded-full blur-3xl"
+              style={{
+                background:
+                  "linear-gradient(90deg, rgba(194,165,55,0.14), rgba(212,181,71,0.08))",
+              }}
+              animate={{ scale: [1, 1.06, 1], opacity: [0.3, 0.6, 0.3] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
             />
+
+            <div className="relative z-10">
+              <Image
+                src={banner}
+                alt="Logo JM Fitness Studio"
+                width={120}
+                height={300}
+                priority
+                className="drop-shadow-[0_8px_24px_rgba(0,0,0,0.5)]"
+              />
+            </div>
           </motion.div>
         </Link>
       </motion.div>
@@ -124,13 +169,15 @@ export function Header() {
         <motion.button
           whileHover={{
             scale: 1.05,
-            backgroundColor: "rgba(194, 165, 55, 0.15)",
-            borderColor: "rgba(194, 165, 55, 0.6)",
+            y: -2,
           }}
-          whileTap={{ scale: 0.95 }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
+          whileTap={{
+            scale: 0.95,
+            y: 1,
+          }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="rounded-xl border-2 border-[#C2A537]/30 bg-[#C2A537]/10 p-3 backdrop-blur-sm transition-all duration-500 hover:shadow-lg hover:shadow-[#C2A537]/25 md:hidden"
+          className="rounded-xl border border-[#C2A537]/20 bg-linear-to-br from-[#C2A537]/10 via-[#C2A537]/5 to-[#C2A537]/10 p-3 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.3),inset_0_1px_2px_rgba(255,255,255,0.1)] backdrop-blur-md transition-all duration-300 hover:shadow-[0_8px_24px_-4px_rgba(194,165,55,0.2),inset_0_1px_2px_rgba(255,255,255,0.2)] md:hidden"
           aria-label="Menu"
         >
           <motion.div
@@ -372,7 +419,11 @@ export function Header() {
                 transition: { duration: 0.2 },
               }}
             >
-              <Link href="/" className={secondaryButton}>
+              <Link
+                href="/"
+                className={isHomePage ? primaryButton : secondaryButton}
+                aria-current={isHomePage ? "page" : undefined}
+              >
                 Início
               </Link>
             </motion.li>
@@ -400,7 +451,9 @@ export function Header() {
                   },
                 }}
               >
-                <StudentLink className={primaryButton}>
+                <StudentLink
+                  className={isStudentPage ? primaryButton : secondaryButton}
+                >
                   Área do Aluno
                 </StudentLink>
               </motion.li>
@@ -419,7 +472,11 @@ export function Header() {
                   transition: { duration: 0.2 },
                 }}
               >
-                <CoachLink className={secondaryButton}>Área do Coach</CoachLink>
+                <CoachLink
+                  className={isCoachPage ? primaryButton : secondaryButton}
+                >
+                  Área do Coach
+                </CoachLink>
               </motion.li>
             </>
           )}
@@ -445,7 +502,11 @@ export function Header() {
                 },
               }}
             >
-              <Link href="/admin/dashboard" className={primaryButton}>
+              <Link
+                href="/admin/dashboard"
+                className={isAdminPage ? primaryButton : secondaryButton}
+                aria-current={isAdminPage ? "page" : undefined}
+              >
                 Dashboard Admin
               </Link>
             </motion.li>
@@ -466,8 +527,40 @@ export function Header() {
               transition: { duration: 0.2 },
             }}
           >
-            <Link href="/services" className={secondaryButton}>
+            <Link
+              href="/services"
+              className={isServicesPage ? primaryButton : secondaryButton}
+              aria-current={isServicesPage ? "page" : undefined}
+            >
               Serviços
+            </Link>
+          </motion.li>
+          {/* Blotão para o Blog - grande e destacado */}
+          <motion.li
+            initial={{ opacity: 0, y: -20, scale: 0.88 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{
+              duration: 0.6,
+              delay: 1.0,
+              ease: "easeOut",
+              type: "spring",
+              stiffness: 90,
+            }}
+            whileHover={{
+              scale: 1.03,
+            }}
+          >
+            <Link
+              href="/blog"
+              aria-label="Ir para o blog"
+              aria-current={isBlogPage ? "page" : undefined}
+              className={
+                isBlogPage
+                  ? `${primaryButton} px-6 py-3 text-sm md:text-base`
+                  : `${secondaryButton} px-6 py-3 text-sm md:text-base`
+              }
+            >
+              Blog
             </Link>
           </motion.li>
           <motion.li
@@ -485,7 +578,11 @@ export function Header() {
               transition: { duration: 0.2 },
             }}
           >
-            <Link href="/contact" className={secondaryButton}>
+            <Link
+              href="/contact"
+              className={isContactPage ? primaryButton : secondaryButton}
+              aria-current={isContactPage ? "page" : undefined}
+            >
               Contato
             </Link>
           </motion.li>
@@ -617,8 +714,13 @@ export function Header() {
                   >
                     <Link
                       href="/"
-                      className={`${secondaryButton} block w-full text-center`}
+                      className={
+                        isHomePage
+                          ? `${primaryButton} block w-full text-center`
+                          : `${secondaryButton} block w-full text-center`
+                      }
                       onClick={() => setIsMenuOpen(false)}
+                      aria-current={isHomePage ? "page" : undefined}
                     >
                       <div className="flex items-center justify-center space-x-2">
                         <svg
@@ -663,7 +765,11 @@ export function Header() {
                       }}
                     >
                       <StudentLink
-                        className={`${primaryButton} block w-full text-center`}
+                        className={
+                          isStudentPage
+                            ? `${primaryButton} block w-full text-center`
+                            : `${secondaryButton} block w-full text-center`
+                        }
                         onClick={() => setIsMenuOpen(false)}
                       >
                         <div className="flex items-center justify-center space-x-2">
@@ -700,7 +806,11 @@ export function Header() {
                       }}
                     >
                       <CoachLink
-                        className={`${secondaryButton} block w-full text-center`}
+                        className={
+                          isCoachPage
+                            ? `${primaryButton} block w-full text-center`
+                            : `${secondaryButton} block w-full text-center`
+                        }
                         onClick={() => setIsMenuOpen(false)}
                       >
                         <div className="flex items-center justify-center space-x-2">
@@ -747,8 +857,13 @@ export function Header() {
                   >
                     <Link
                       href="/admin/dashboard"
-                      className={`${primaryButton} block w-full text-center`}
+                      className={
+                        isAdminPage
+                          ? `${primaryButton} block w-full text-center`
+                          : `${secondaryButton} block w-full text-center`
+                      }
                       onClick={() => setIsMenuOpen(false)}
+                      aria-current={isAdminPage ? "page" : undefined}
                     >
                       <div className="flex items-center justify-center space-x-2">
                         <svg
@@ -787,8 +902,13 @@ export function Header() {
                 >
                   <Link
                     href="/services"
-                    className={`${secondaryButton} block w-full text-center`}
+                    className={
+                      isServicesPage
+                        ? `${primaryButton} block w-full text-center`
+                        : `${secondaryButton} block w-full text-center`
+                    }
                     onClick={() => setIsMenuOpen(false)}
+                    aria-current={isServicesPage ? "page" : undefined}
                   >
                     <div className="flex items-center justify-center space-x-2">
                       <svg
@@ -799,6 +919,50 @@ export function Header() {
                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                       </svg>
                       <span>Serviços</span>
+                    </div>
+                  </Link>
+                </motion.li>
+                <motion.li
+                  variants={{
+                    open: {
+                      opacity: 1,
+                      x: 0,
+                      scale: 1,
+                      rotateY: 0,
+                    },
+                    closed: {
+                      opacity: 0,
+                      x: -25,
+                      scale: 0.8,
+                      rotateY: -15,
+                    },
+                  }}
+                  whileHover={{
+                    scale: 1.02,
+                    x: 3,
+                    transition: { duration: 0.2 },
+                  }}
+                >
+                  <Link
+                    href="/blog"
+                    className={
+                      isBlogPage
+                        ? `${primaryButton} block w-full text-center`
+                        : `${secondaryButton} block w-full text-center`
+                    }
+                    onClick={() => setIsMenuOpen(false)}
+                    aria-label="Ir para o blog"
+                    aria-current={isBlogPage ? "page" : undefined}
+                  >
+                    <div className="flex items-center justify-center space-x-2">
+                      <svg
+                        className="h-4 w-4"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path d="M4 4h16v2H4zM4 9h10v2H4zM4 14h16v2H4z" />
+                      </svg>
+                      <span>Blog</span>
                     </div>
                   </Link>
                 </motion.li>

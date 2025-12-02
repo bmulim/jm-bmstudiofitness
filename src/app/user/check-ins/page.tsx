@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { getStudentCheckInsAction } from "@/actions/user/get-check-ins-action";
+import CheckInCalendar from "@/components/CheckInCalendar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -101,7 +102,7 @@ export default function StudentCheckInsPage() {
                   Histórico de Check-ins
                 </CardTitle>
                 <CardDescription className="text-lg text-slate-300">
-                  Acompanhe sua frequência na academia
+                  Acompanhe sua frequência no estúdio
                 </CardDescription>
               </div>
 
@@ -160,6 +161,37 @@ export default function StudentCheckInsPage() {
             </Card>
           </div>
         )}
+
+        {/* Calendário de Check-ins */}
+        <div className="mb-8">
+          <CheckInCalendar
+            checkIns={checkIns.map((checkIn) => ({
+              date: new Date(checkIn.checkInTimestamp),
+              time: new Date(checkIn.checkInTimestamp).toLocaleTimeString(
+                "pt-BR",
+                {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                },
+              ),
+              status: "present" as const,
+            }))}
+            onDateClick={(date) => {
+              const checkInsOnDate = checkIns.filter((checkIn) => {
+                const checkInDate = new Date(checkIn.checkInTimestamp);
+                return (
+                  checkInDate.getDate() === date.getDate() &&
+                  checkInDate.getMonth() === date.getMonth() &&
+                  checkInDate.getFullYear() === date.getFullYear()
+                );
+              });
+              if (checkInsOnDate.length > 0) {
+                console.log("Check-ins na data:", checkInsOnDate);
+              }
+            }}
+            showLegend={true}
+          />
+        </div>
 
         {/* Lista de Check-ins */}
         <Card className="border-[#C2A537]/50 bg-black/40">

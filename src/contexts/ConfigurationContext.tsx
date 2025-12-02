@@ -33,7 +33,7 @@ interface ConfigurationSettings {
   birthdayAlerts: boolean;
   systemAlerts: boolean;
 
-  // Academia
+  // Estúdio
   gymName: string;
   address: string;
   phone: string;
@@ -83,11 +83,11 @@ const defaultSettings: ConfigurationSettings = {
   birthdayAlerts: true,
   systemAlerts: true,
 
-  // Academia
+  // Estúdio
   gymName: "JM Fitness Studio",
   address: "Rua das Flores, 123",
   phone: "(11) 99999-9999",
-  email: "contato@jmfitnessstudio.com",
+  email: "contato@jmfitness.com",
   openTime: "06:00",
   closeTime: "22:00",
 
@@ -105,7 +105,7 @@ export function ConfigurationProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<ConfigurationSettings>(() => {
     // Tentar carregar configurações do localStorage
     if (typeof window !== "undefined") {
-      const savedSettings = localStorage.getItem("bmstudio-settings");
+      const savedSettings = localStorage.getItem("jmfitness-settings");
       if (savedSettings) {
         try {
           return { ...defaultSettings, ...JSON.parse(savedSettings) };
@@ -134,7 +134,7 @@ export function ConfigurationProvider({ children }: { children: ReactNode }) {
     if (typeof window !== "undefined") {
       try {
         localStorage.setItem(
-          "bmstudio-settings",
+          "jmfitness-settings",
           JSON.stringify(updatedSettings),
         );
       } catch (error) {
@@ -148,7 +148,7 @@ export function ConfigurationProvider({ children }: { children: ReactNode }) {
 
     // Limpar localStorage
     if (typeof window !== "undefined") {
-      localStorage.removeItem("bmstudio-settings");
+      localStorage.removeItem("jmfitness-settings");
     }
   };
 
