@@ -61,11 +61,19 @@ const employeeSchema = baseSchema.extend({
 // Schema para alunos
 const studentSchema = baseSchema.extend({
   monthlyFeeValueInCents: z.number().min(0, "Mensalidade inválida"),
-  paymentMethod: z.enum(["pix", "cartao-credito", "cartao-debito", "dinheiro", "boleto"]),
+  paymentMethod: z.enum([
+    "pix",
+    "cartao-credito",
+    "cartao-debito",
+    "dinheiro",
+    "boleto",
+  ]),
   dueDate: z.number().min(1).max(31, "Dia de vencimento inválido"),
 });
 
-type FormData = z.infer<typeof baseSchema> & Partial<z.infer<typeof employeeSchema>> & Partial<z.infer<typeof studentSchema>>;
+type FormData = z.infer<typeof baseSchema> &
+  Partial<z.infer<typeof employeeSchema>> &
+  Partial<z.infer<typeof studentSchema>>;
 
 export function EditUserModal({
   userId,
@@ -82,7 +90,11 @@ export function EditUserModal({
   const isEmployee = userRole === "funcionario" || userRole === "professor";
   const isStudent = userRole === "aluno";
 
-  const schema = isEmployee ? employeeSchema : isStudent ? studentSchema : baseSchema;
+  const schema = isEmployee
+    ? employeeSchema
+    : isStudent
+      ? studentSchema
+      : baseSchema;
 
   const {
     register,
@@ -103,7 +115,7 @@ export function EditUserModal({
       getUserDataAction(userId).then((result) => {
         if (result.success && result.data) {
           const data = result.data;
-          
+
           // Dados básicos
           setValue("name", data.name);
           setValue("email", data.email);
@@ -115,10 +127,16 @@ export function EditUserModal({
           // Dados de funcionário/professor
           if (isEmployee) {
             if (data.position) setValue("position", data.position);
-            if (data.shift) setValue("shift", data.shift as "manha" | "tarde" | "noite" | "integral");
-            if (data.shiftStartTime) setValue("shiftStartTime", data.shiftStartTime);
+            if (data.shift)
+              setValue(
+                "shift",
+                data.shift as "manha" | "tarde" | "noite" | "integral",
+              );
+            if (data.shiftStartTime)
+              setValue("shiftStartTime", data.shiftStartTime);
             if (data.shiftEndTime) setValue("shiftEndTime", data.shiftEndTime);
-            if (data.salaryInCents !== undefined) setValue("salaryInCents", data.salaryInCents);
+            if (data.salaryInCents !== undefined)
+              setValue("salaryInCents", data.salaryInCents);
           }
 
           // Dados de aluno
@@ -127,7 +145,15 @@ export function EditUserModal({
               setValue("monthlyFeeValueInCents", data.monthlyFeeValueInCents);
             }
             if (data.paymentMethod) {
-              setValue("paymentMethod", data.paymentMethod as "pix" | "cartao-credito" | "cartao-debito" | "dinheiro" | "boleto");
+              setValue(
+                "paymentMethod",
+                data.paymentMethod as
+                  | "pix"
+                  | "cartao-credito"
+                  | "cartao-debito"
+                  | "dinheiro"
+                  | "boleto",
+              );
             }
             if (data.dueDate !== undefined) setValue("dueDate", data.dueDate);
           }
@@ -163,10 +189,18 @@ export function EditUserModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            Editar {userRole === "aluno" ? "Aluno" : userRole === "professor" ? "Professor" : userRole === "funcionario" ? "Funcionário" : "Usuário"}: {userName}
+            Editar{" "}
+            {userRole === "aluno"
+              ? "Aluno"
+              : userRole === "professor"
+                ? "Professor"
+                : userRole === "funcionario"
+                  ? "Funcionário"
+                  : "Usuário"}
+            : {userName}
           </DialogTitle>
         </DialogHeader>
 
@@ -180,16 +214,22 @@ export function EditUserModal({
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="personal">Dados Pessoais</TabsTrigger>
                 <TabsTrigger value="specific">
-                  {isEmployee ? "Dados Profissionais" : isStudent ? "Dados Financeiros" : "Outros Dados"}
+                  {isEmployee
+                    ? "Dados Profissionais"
+                    : isStudent
+                      ? "Dados Financeiros"
+                      : "Outros Dados"}
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="personal" className="space-y-4 mt-4">
+              <TabsContent value="personal" className="mt-4 space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Nome Completo *</Label>
                   <Input id="name" {...register("name")} />
                   {errors.name && (
-                    <p className="text-sm text-red-500">{errors.name.message}</p>
+                    <p className="text-sm text-red-500">
+                      {errors.name.message}
+                    </p>
                   )}
                 </div>
 
@@ -198,7 +238,9 @@ export function EditUserModal({
                     <Label htmlFor="email">Email *</Label>
                     <Input id="email" type="email" {...register("email")} />
                     {errors.email && (
-                      <p className="text-sm text-red-500">{errors.email.message}</p>
+                      <p className="text-sm text-red-500">
+                        {errors.email.message}
+                      </p>
                     )}
                   </div>
 
@@ -206,7 +248,9 @@ export function EditUserModal({
                     <Label htmlFor="telephone">Telefone *</Label>
                     <Input id="telephone" {...register("telephone")} />
                     {errors.telephone && (
-                      <p className="text-sm text-red-500">{errors.telephone.message}</p>
+                      <p className="text-sm text-red-500">
+                        {errors.telephone.message}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -215,30 +259,44 @@ export function EditUserModal({
                   <Label htmlFor="address">Endereço *</Label>
                   <Input id="address" {...register("address")} />
                   {errors.address && (
-                    <p className="text-sm text-red-500">{errors.address.message}</p>
+                    <p className="text-sm text-red-500">
+                      {errors.address.message}
+                    </p>
                   )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="cpf">CPF</Label>
-                    <Input id="cpf" {...register("cpf")} placeholder="000.000.000-00" />
+                    <Input
+                      id="cpf"
+                      {...register("cpf")}
+                      placeholder="000.000.000-00"
+                    />
                     {errors.cpf && (
-                      <p className="text-sm text-red-500">{errors.cpf.message}</p>
+                      <p className="text-sm text-red-500">
+                        {errors.cpf.message}
+                      </p>
                     )}
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="bornDate">Data de Nascimento</Label>
-                    <Input id="bornDate" type="date" {...register("bornDate")} />
+                    <Input
+                      id="bornDate"
+                      type="date"
+                      {...register("bornDate")}
+                    />
                     {errors.bornDate && (
-                      <p className="text-sm text-red-500">{errors.bornDate.message}</p>
+                      <p className="text-sm text-red-500">
+                        {errors.bornDate.message}
+                      </p>
                     )}
                   </div>
                 </div>
               </TabsContent>
 
-              <TabsContent value="specific" className="space-y-4 mt-4">
+              <TabsContent value="specific" className="mt-4 space-y-4">
                 {isEmployee && (
                   <>
                     <div className="grid grid-cols-2 gap-4">
@@ -246,14 +304,21 @@ export function EditUserModal({
                         <Label htmlFor="position">Cargo *</Label>
                         <Input id="position" {...register("position")} />
                         {errors.position && (
-                          <p className="text-sm text-red-500">{errors.position.message}</p>
+                          <p className="text-sm text-red-500">
+                            {errors.position.message}
+                          </p>
                         )}
                       </div>
 
                       <div className="space-y-2">
                         <Label htmlFor="shift">Turno *</Label>
                         <Select
-                          onValueChange={(value) => setValue("shift", value as "manha" | "tarde" | "noite" | "integral")}
+                          onValueChange={(value) =>
+                            setValue(
+                              "shift",
+                              value as "manha" | "tarde" | "noite" | "integral",
+                            )
+                          }
                           defaultValue={shift}
                         >
                           <SelectTrigger>
@@ -267,20 +332,32 @@ export function EditUserModal({
                           </SelectContent>
                         </Select>
                         {errors.shift && (
-                          <p className="text-sm text-red-500">{errors.shift.message}</p>
+                          <p className="text-sm text-red-500">
+                            {errors.shift.message}
+                          </p>
                         )}
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="shiftStartTime">Início do Expediente</Label>
-                        <Input id="shiftStartTime" type="time" {...register("shiftStartTime")} />
+                        <Label htmlFor="shiftStartTime">
+                          Início do Expediente
+                        </Label>
+                        <Input
+                          id="shiftStartTime"
+                          type="time"
+                          {...register("shiftStartTime")}
+                        />
                       </div>
 
                       <div className="space-y-2">
                         <Label htmlFor="shiftEndTime">Fim do Expediente</Label>
-                        <Input id="shiftEndTime" type="time" {...register("shiftEndTime")} />
+                        <Input
+                          id="shiftEndTime"
+                          type="time"
+                          {...register("shiftEndTime")}
+                        />
                       </div>
                     </div>
 
@@ -291,22 +368,30 @@ export function EditUserModal({
                         type="number"
                         step="0.01"
                         {...register("salaryInCents", {
-                          setValueAs: (value) => Math.round(parseFloat(value) * 100),
+                          setValueAs: (value) =>
+                            Math.round(parseFloat(value) * 100),
                         })}
                         onChange={(e) => {
                           const valueInReais = parseFloat(e.target.value) || 0;
-                          setValue("salaryInCents", Math.round(valueInReais * 100));
+                          setValue(
+                            "salaryInCents",
+                            Math.round(valueInReais * 100),
+                          );
                         }}
                         defaultValue={(watch("salaryInCents") || 0) / 100}
                       />
                       {errors.salaryInCents && (
-                        <p className="text-sm text-red-500">{errors.salaryInCents.message}</p>
+                        <p className="text-sm text-red-500">
+                          {errors.salaryInCents.message}
+                        </p>
                       )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="salaryChangeReason">Motivo da Mudança Salarial</Label>
+                        <Label htmlFor="salaryChangeReason">
+                          Motivo da Mudança Salarial
+                        </Label>
                         <Input
                           id="salaryChangeReason"
                           {...register("salaryChangeReason")}
@@ -315,7 +400,9 @@ export function EditUserModal({
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="salaryEffectiveDate">Data Efetiva</Label>
+                        <Label htmlFor="salaryEffectiveDate">
+                          Data Efetiva
+                        </Label>
                         <Input
                           id="salaryEffectiveDate"
                           type="date"
@@ -336,13 +423,20 @@ export function EditUserModal({
                           type="number"
                           step="0.01"
                           {...register("monthlyFeeValueInCents", {
-                            setValueAs: (value) => Math.round(parseFloat(value) * 100),
+                            setValueAs: (value) =>
+                              Math.round(parseFloat(value) * 100),
                           })}
                           onChange={(e) => {
-                            const valueInReais = parseFloat(e.target.value) || 0;
-                            setValue("monthlyFeeValueInCents", Math.round(valueInReais * 100));
+                            const valueInReais =
+                              parseFloat(e.target.value) || 0;
+                            setValue(
+                              "monthlyFeeValueInCents",
+                              Math.round(valueInReais * 100),
+                            );
                           }}
-                          defaultValue={(watch("monthlyFeeValueInCents") || 0) / 100}
+                          defaultValue={
+                            (watch("monthlyFeeValueInCents") || 0) / 100
+                          }
                         />
                         {errors.monthlyFeeValueInCents && (
                           <p className="text-sm text-red-500">
@@ -363,16 +457,28 @@ export function EditUserModal({
                           })}
                         />
                         {errors.dueDate && (
-                          <p className="text-sm text-red-500">{errors.dueDate.message}</p>
+                          <p className="text-sm text-red-500">
+                            {errors.dueDate.message}
+                          </p>
                         )}
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="paymentMethod">Método de Pagamento *</Label>
+                      <Label htmlFor="paymentMethod">
+                        Método de Pagamento *
+                      </Label>
                       <Select
                         onValueChange={(value) =>
-                          setValue("paymentMethod", value as "pix" | "cartao-credito" | "cartao-debito" | "dinheiro" | "boleto")
+                          setValue(
+                            "paymentMethod",
+                            value as
+                              | "pix"
+                              | "cartao-credito"
+                              | "cartao-debito"
+                              | "dinheiro"
+                              | "boleto",
+                          )
                         }
                         defaultValue={watch("paymentMethod")}
                       >
@@ -381,21 +487,27 @@ export function EditUserModal({
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="pix">PIX</SelectItem>
-                          <SelectItem value="cartao-credito">Cartão de Crédito</SelectItem>
-                          <SelectItem value="cartao-debito">Cartão de Débito</SelectItem>
+                          <SelectItem value="cartao-credito">
+                            Cartão de Crédito
+                          </SelectItem>
+                          <SelectItem value="cartao-debito">
+                            Cartão de Débito
+                          </SelectItem>
                           <SelectItem value="dinheiro">Dinheiro</SelectItem>
                           <SelectItem value="boleto">Boleto</SelectItem>
                         </SelectContent>
                       </Select>
                       {errors.paymentMethod && (
-                        <p className="text-sm text-red-500">{errors.paymentMethod.message}</p>
+                        <p className="text-sm text-red-500">
+                          {errors.paymentMethod.message}
+                        </p>
                       )}
                     </div>
                   </>
                 )}
 
                 {!isEmployee && !isStudent && (
-                  <div className="text-center py-8 text-muted-foreground">
+                  <div className="text-muted-foreground py-8 text-center">
                     Nenhum dado adicional disponível para este tipo de usuário.
                   </div>
                 )}
@@ -403,7 +515,12 @@ export function EditUserModal({
             </Tabs>
 
             <DialogFooter className="mt-6">
-              <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={isLoading}
+              >
                 Cancelar
               </Button>
               <Button type="submit" disabled={isLoading}>

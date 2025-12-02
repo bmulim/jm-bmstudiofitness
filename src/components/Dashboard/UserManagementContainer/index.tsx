@@ -19,13 +19,13 @@ export function UserManagementContainer() {
   const loadUsers = useCallback(async () => {
     try {
       setIsLoading(true);
-      
+
       // Carregar ID do admin logado
       const userIdResult = await getCurrentUserIdAction();
       if (userIdResult.success && userIdResult.userId) {
         setAdminId(userIdResult.userId);
       }
-      
+
       const result = await getAllUsersAction();
 
       if (result.success && result.users) {

@@ -21,7 +21,7 @@ interface UpdateUserData {
   address: string;
   cpf?: string;
   bornDate?: string;
-  
+
   // Dados de funcionário/professor
   position?: string;
   shift?: string;
@@ -30,7 +30,7 @@ interface UpdateUserData {
   salaryInCents?: number;
   salaryChangeReason?: string;
   salaryEffectiveDate?: string;
-  
+
   // Dados de aluno
   monthlyFeeValueInCents?: number;
   paymentMethod?: string;
@@ -39,7 +39,7 @@ interface UpdateUserData {
 
 export async function updateUserAction(
   adminId: string,
-  userData: UpdateUserData
+  userData: UpdateUserData,
 ): Promise<{
   success: boolean;
   error?: string;
@@ -92,7 +92,11 @@ export async function updateUserAction(
 
     // Se for funcionário ou professor, atualizar dados de employee
     if (user.role === "funcionario" || user.role === "professor") {
-      if (userData.position || userData.shift || userData.salaryInCents !== undefined) {
+      if (
+        userData.position ||
+        userData.shift ||
+        userData.salaryInCents !== undefined
+      ) {
         // Buscar salário atual para verificar mudanças
         const [currentEmployee] = await db
           .select({ salaryInCents: employeesTable.salaryInCents })
@@ -127,14 +131,17 @@ export async function updateUserAction(
           if (employee) {
             // Formatar data como string YYYY-MM-DD
             const effectiveDateStr = userData.salaryEffectiveDate
-              ? new Date(userData.salaryEffectiveDate).toISOString().split('T')[0]
-              : new Date().toISOString().split('T')[0];
+              ? new Date(userData.salaryEffectiveDate)
+                  .toISOString()
+                  .split("T")[0]
+              : new Date().toISOString().split("T")[0];
 
             await db.insert(employeeSalaryHistoryTable).values({
               employeeId: employee.id,
               previousSalaryInCents: currentEmployee.salaryInCents,
               newSalaryInCents: userData.salaryInCents,
-              changeReason: userData.salaryChangeReason || "Atualização salarial",
+              changeReason:
+                userData.salaryChangeReason || "Atualização salarial",
               effectiveDate: effectiveDateStr,
               changedBy: adminId,
               createdAt: new Date(),

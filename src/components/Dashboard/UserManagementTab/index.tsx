@@ -462,7 +462,9 @@ export function UserManagementTab({
                         Ver
                       </Button>
 
-                      {(user.role === "aluno" || user.role === "funcionario" || user.role === "professor") && (
+                      {(user.role === "aluno" ||
+                        user.role === "funcionario" ||
+                        user.role === "professor") && (
                         <Button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -741,7 +743,9 @@ export function UserManagementTab({
 
               {/* Ações */}
               <div className="flex gap-3 border-t border-slate-700/50 pt-6">
-                {(selectedUser.role === "aluno" || selectedUser.role === "funcionario" || selectedUser.role === "professor") ? (
+                {selectedUser.role === "aluno" ||
+                selectedUser.role === "funcionario" ||
+                selectedUser.role === "professor" ? (
                   <Button
                     onClick={() => handleEditUser(selectedUser)}
                     disabled={actionLoading}

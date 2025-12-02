@@ -19,7 +19,7 @@ export interface UserData {
   address: string;
   cpf?: string;
   bornDate?: string;
-  
+
   // Dados de funcionário/professor (se aplicável)
   employeeId?: string;
   position?: string;
@@ -27,7 +27,7 @@ export interface UserData {
   shiftStartTime?: string;
   shiftEndTime?: string;
   salaryInCents?: number;
-  
+
   // Dados de aluno (se aplicável)
   monthlyFeeValueInCents?: number;
   paymentMethod?: string;
