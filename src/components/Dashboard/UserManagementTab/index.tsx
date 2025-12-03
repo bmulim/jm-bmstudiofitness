@@ -469,24 +469,20 @@ export function UserManagementTab({
                         Ver
                       </Button>
 
-                      {(user.role === "aluno" ||
-                        user.role === "funcionario" ||
-                        user.role === "professor") && (
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEditUser(user);
-                          }}
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 border-[#C2A537]/50 bg-[#C2A537]/10 text-[#C2A537] hover:bg-[#C2A537]/20"
-                          disabled={actionLoading}
-                          title="Editar dados"
-                        >
-                          <Edit className="mr-1 h-3 w-3" />
-                          Editar
-                        </Button>
-                      )}
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditUser(user);
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 border-[#C2A537]/50 bg-[#C2A537]/10 text-[#C2A537] hover:bg-[#C2A537]/20"
+                        disabled={actionLoading}
+                        title="Editar dados"
+                      >
+                        <Edit className="mr-1 h-3 w-3" />
+                        Editar
+                      </Button>
 
                       {user.role !== "admin" && (
                         <>
@@ -750,22 +746,14 @@ export function UserManagementTab({
 
               {/* Ações */}
               <div className="flex gap-3 border-t border-slate-700/50 pt-6">
-                {selectedUser.role === "aluno" ||
-                selectedUser.role === "funcionario" ||
-                selectedUser.role === "professor" ? (
-                  <Button
-                    onClick={() => handleEditUser(selectedUser)}
-                    disabled={actionLoading}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700"
-                  >
-                    <Edit className="mr-2 h-4 w-4" />
-                    Editar Usuário
-                  </Button>
-                ) : (
-                  <div className="flex-1 rounded-md border border-slate-700 bg-slate-800/50 px-4 py-2 text-center text-sm text-slate-400">
-                    Edição não disponível para este tipo de usuário
-                  </div>
-                )}
+                <Button
+                  onClick={() => handleEditUser(selectedUser)}
+                  disabled={actionLoading}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                >
+                  <Edit className="mr-2 h-4 w-4" />
+                  Editar Usuário
+                </Button>
                 {selectedUser.role !== "admin" && (
                   <Button
                     onClick={() => {
